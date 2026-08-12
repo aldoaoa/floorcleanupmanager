@@ -84,6 +84,40 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('btn-close-detail').addEventListener('click', () => {
             document.getElementById('modal-detail').classList.remove('active');
         });
+
+        // Floor Condition Guide Cards Listener
+        const cardStained = document.getElementById('card-guide-stained');
+        const cardScratched = document.getElementById('card-guide-scratched');
+        const selectReasonEl = document.getElementById('req-reason');
+
+        function syncGuideCardHighlights(selectedVal) {
+            if (cardStained) cardStained.classList.toggle('active-guide', selectedVal === 'Piso manchado');
+            if (cardScratched) cardScratched.classList.toggle('active-guide', selectedVal === 'Piso con rayones');
+        }
+
+        if (cardStained) {
+            cardStained.addEventListener('click', () => {
+                if (selectReasonEl) {
+                    selectReasonEl.value = 'Piso manchado';
+                    syncGuideCardHighlights('Piso manchado');
+                }
+            });
+        }
+
+        if (cardScratched) {
+            cardScratched.addEventListener('click', () => {
+                if (selectReasonEl) {
+                    selectReasonEl.value = 'Piso con rayones';
+                    syncGuideCardHighlights('Piso con rayones');
+                }
+            });
+        }
+
+        if (selectReasonEl) {
+            selectReasonEl.addEventListener('change', (e) => {
+                syncGuideCardHighlights(e.target.value);
+            });
+        }
     }
 
     // Fetch Maps from C# API

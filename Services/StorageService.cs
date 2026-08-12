@@ -28,6 +28,27 @@ public class StorageService
         _dataFilePath = Path.Combine(dataDir, "esd_data_store.json");
 
         LoadFromDisk();
+        EnsureReferenceImages();
+    }
+
+    private void EnsureReferenceImages()
+    {
+        try
+        {
+            string userUploadedDir = @"C:\Users\OrozcoA\.gemini\antigravity\brain\0b60019d-74ee-41f9-87c4-6ab0b42e5575\.user_uploaded";
+            string img1Path = Path.Combine(userUploadedDir, "media_1786553785612.png");
+            string img2Path = Path.Combine(userUploadedDir, "media_1786554003126.png");
+
+            string target1 = Path.Combine(_uploadDirectory, "piso_manchado.png");
+            string target2 = Path.Combine(_uploadDirectory, "piso_rayado.png");
+
+            if (File.Exists(img1Path)) File.Copy(img1Path, target1, true);
+            if (File.Exists(img2Path)) File.Copy(img2Path, target2, true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Copy Reference Images] {ex.Message}");
+        }
     }
 
     private void LoadFromDisk()
