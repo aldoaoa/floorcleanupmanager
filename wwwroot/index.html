@@ -33,6 +33,9 @@
             <button class="nav-btn" data-tab="historial">
                 <i class="fa-solid fa-list-check"></i> Historial y Solicitudes <span class="badge-count" id="request-badge">1</span>
             </button>
+            <button class="nav-btn" data-tab="limpieza">
+                <i class="fa-solid fa-broom"></i> Módulo de Limpieza
+            </button>
             <button class="nav-btn" data-tab="ajustes">
                 <i class="fa-solid fa-sliders"></i> Ajustes y Mapeo
             </button>
@@ -383,6 +386,106 @@
             </div>
         </section>
 
+        <!-- TAB 4: MÓDULO DE LIMPIEZA Y REGISTRO DE ZONAS -->
+        <section id="tab-limpieza" class="tab-content">
+            <div class="grid-layout">
+                
+                <!-- Left Panel: Interactive Drawing Map -->
+                <div class="panel map-panel glass-card">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-draw-polygon"></i> Trazado de Áreas Limpiadas en Mapa</h2>
+                        <div class="area-selector-container">
+                            <label for="cleaner-area-select">Área de Planta:</label>
+                            <select id="cleaner-area-select" class="custom-select">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="map-instructions" style="background: rgba(16, 185, 129, 0.12); border-left: 3px solid var(--status-green); padding: 0.65rem 1rem; border-radius: 4px; font-size: 0.85rem; color: #ffffff; margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
+                        <span><i class="fa-solid fa-computer-mouse"></i> <strong>Modo Trazado:</strong> Haz clic y arrastra sobre el mapa para dibujar el recuadro del área limpiada.</span>
+                        <button type="button" id="btn-clear-drawing" class="btn-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;"><i class="fa-solid fa-rotate-left"></i> Borrar Trazado</button>
+                    </div>
+
+                    <div class="map-viewport" id="cleaner-map-viewport" style="position: relative;">
+                        <div class="map-wrapper" id="cleaner-map-wrapper" style="cursor: crosshair;">
+                            <img id="cleaner-floor-map-img" src="" alt="Plano de Piso para Limpieza" />
+                            <!-- Cleaned zones bounding boxes overlay & drawing canvas -->
+                            <div id="cleaner-map-overlay"></div>
+                            <div id="drawing-box-preview" class="drawing-box-preview hidden"></div>
+                        </div>
+                    </div>
+
+                    <div class="map-legend margin-top-sm">
+                        <span class="legend-item"><span class="dot green"></span> Recuadro de Limpieza Realizada</span>
+                        <span class="legend-item"><span class="dot red"></span> Punto/Solicitud de Limpieza Pendiente</span>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Cleaning Execution & Authorized Queue -->
+                <div class="panel form-panel glass-card">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-clipboard-check"></i> Registro de Limpieza Realizada</h2>
+                    </div>
+
+                    <!-- Cleaned Zone Form -->
+                    <form id="form-cleaner-zone" class="request-form">
+                        
+                        <!-- Drawing Box Coordinates Status -->
+                        <div class="form-group">
+                            <label>Recuadro Trazado en Mapa:</label>
+                            <div class="coord-display" id="cleaner-box-display">
+                                <i class="fa-solid fa-vector-square"></i> <span id="cleaner-box-text">Ningún recuadro dibujado (Haz clic y arrastra en el mapa)</span>
+                            </div>
+                        </div>
+
+                        <!-- Link with Request (Optional or Auto-filled) -->
+                        <div class="form-group">
+                            <label for="cleaner-req-id">Vincular Solicitud Autorizada (Opcional):</label>
+                            <select id="cleaner-req-id" class="custom-select">
+                                <option value="">-- Sin Solicitud (Limpieza Directa de Rutina) --</option>
+                                <!-- Populated with authorized requests -->
+                            </select>
+                        </div>
+
+                        <!-- Cleaning Date -->
+                        <div class="form-group">
+                            <label for="cleaner-date">Fecha en que se Realizó la Limpieza: <span class="req">*</span></label>
+                            <input type="datetime-local" id="cleaner-date" class="custom-input" required />
+                        </div>
+
+                        <!-- Performed By -->
+                        <div class="form-group">
+                            <label for="cleaner-by">Nombre del Personal de Limpieza: <span class="req">*</span></label>
+                            <input type="text" id="cleaner-by" class="custom-input" placeholder="Nombre de la persona o equipo de mantenimiento" required />
+                        </div>
+
+                        <!-- Notes & Observations -->
+                        <div class="form-group">
+                            <label for="cleaner-notes">Notas / Tipo de Cera Aplicada:</label>
+                            <textarea id="cleaner-notes" rows="2" class="custom-textarea" placeholder="Indicar tipo de cera ESD aplicada, solvente utilizado o detalles de la loseta..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-weight: 700;">
+                            <i class="fa-solid fa-circle-check"></i> Guardar Recuadro y Marcar Limpieza Realizada
+                        </button>
+                    </form>
+
+                    <!-- Authorized Requests Queue Section -->
+                    <div class="authorized-queue-section margin-top">
+                        <h3 style="font-size: 0.95rem; color: var(--primary); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem;">
+                            <i class="fa-solid fa-list-check"></i> Solicitudes Autorizadas Pendientes
+                        </h3>
+                        <div class="authorized-queue-list" id="authorized-queue-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
     </main>
 
     <!-- Modal WebCam Capture -->
@@ -468,7 +571,7 @@
 
     <!-- Footer -->
     <footer class="app-footer">
-        <p>Sistema de Solicitudes de Limpieza Cera Antiestática &copy; 2026. Cumplimiento con <strong>ANSI/ESD S20.20-2021</strong>. <span class="version-badge" id="app-version-badge">v1.0.5</span></p>
+        <p>Sistema de Solicitudes de Limpieza Cera Antiestática &copy; 2026. Cumplimiento con <strong>ANSI/ESD S20.20-2021</strong>. <span class="version-badge" id="app-version-badge">v1.1.0</span></p>
     </footer>
 
     <!-- App Script -->

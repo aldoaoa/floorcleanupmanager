@@ -65,6 +65,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderEditorMap();
                     renderAreasManagementTable();
                 }
+
+                if (targetTab === 'limpieza') {
+                    if (cleanerAreaSelect) {
+                        const targetArea = cleanerAreaSelect.value || (currentMaps[0] ? currentMaps[0].areaId : '');
+                        selectCleanerArea(targetArea);
+                    }
+                    renderAuthorizedRequestsQueue();
+                }
             });
         });
     }
@@ -77,6 +85,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (editorAreaSelect) {
             editorAreaSelect.addEventListener('change', (e) => {
                 selectEditorArea(e.target.value);
+            });
+        }
+
+        if (cleanerAreaSelect) {
+            cleanerAreaSelect.addEventListener('change', (e) => {
+                selectCleanerArea(e.target.value);
+            });
+        }
+
+        if (btnClearDrawing) {
+            btnClearDrawing.addEventListener('click', () => {
+                drawnBoxCoords = null;
+                if (cleanerBoxText) cleanerBoxText.innerHTML = '<i class="fa-solid fa-vector-square"></i> <span>Ningún recuadro dibujado (Haz clic y arrastra en el mapa)</span>';
+                renderCleanerMapOverlay();
             });
         }
 
@@ -136,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function populateAreaDropdowns() {
         areaSelect.innerHTML = '<option value="">-- Seleccionar Área de Planta --</option>';
         if (editorAreaSelect) editorAreaSelect.innerHTML = '';
+        if (cleanerAreaSelect) cleanerAreaSelect.innerHTML = '';
 
         currentMaps.forEach(map => {
             const opt1 = document.createElement('option');
@@ -149,6 +172,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt2.textContent = `${map.areaId} - ${map.areaName} (${map.criticality})`;
                 editorAreaSelect.appendChild(opt2);
             }
+
+            if (cleanerAreaSelect) {
+                const opt3 = document.createElement('option');
+                opt3.value = map.areaId;
+                opt3.textContent = `${map.areaId} - ${map.areaName}`;
+                cleanerAreaSelect.appendChild(opt3);
+            }
         });
 
         if (currentMaps.length > 0) {
@@ -157,6 +187,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectEditorArea(currentEditorValue);
             } else {
                 selectEditorArea(currentMaps[0].areaId);
+            }
+
+            if (cleanerAreaSelect && !cleanerSelectedArea) {
+                selectCleanerArea(currentMaps[0].areaId);
             }
         }
 
@@ -1128,5 +1162,308 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!dateStr) return 100;
         const diffMs = new Date() - new Date(dateStr);
         return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
+    }
+
+    // ==========================================
+    // CLEANER EXECUTION MODULE (TAB 4)
+    // ==========================================
+    const cleanerAreaSelect = document.getElementById('cleaner-area-select');
+    const cleanerFloorMapImg = document.getElementById('cleaner-floor-map-img');
+    const cleanerMapWrapper = document.getElementById('cleaner-map-wrapper');
+    const cleanerMapOverlay = document.getElementById('cleaner-map-overlay');
+    const drawingBoxPreview = document.getElementById('drawing-box-preview');
+    const cleanerBoxText = document.getElementById('cleaner-box-text');
+    const cleanerReqIdSelect = document.getElementById('cleaner-req-id');
+    const cleanerDateInput = document.getElementById('cleaner-date');
+    const cleanerByInput = document.getElementById('cleaner-by');
+    const cleanerNotesInput = document.getElementById('cleaner-notes');
+    const formCleanerZone = document.getElementById('form-cleaner-zone');
+    const btnClearDrawing = document.getElementById('btn-clear-drawing');
+    const authorizedQueueList = document.getElementById('authorized-queue-list');
+
+    let cleanerSelectedArea = null;
+    let drawnBoxCoords = null; // { xPercent, yPercent, widthPercent, heightPercent }
+    let isDrawingBox = false;
+    let drawStartPx = { x: 0, y: 0 };
+
+    if (cleanerDateInput && !cleanerDateInput.value) {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        cleanerDateInput.value = now.toISOString().slice(0, 16);
+    }
+
+    async function selectCleanerArea(areaId) {
+        cleanerSelectedArea = currentMaps.find(m => m.areaId === areaId);
+        if (!cleanerSelectedArea) return;
+
+        if (cleanerAreaSelect) cleanerAreaSelect.value = areaId;
+        if (cleanerFloorMapImg) cleanerFloorMapImg.src = cleanerSelectedArea.imageUrl;
+
+        drawnBoxCoords = null;
+        if (cleanerBoxText) cleanerBoxText.innerHTML = '<i class="fa-solid fa-vector-square"></i> <span>Ningún recuadro dibujado (Haz clic y arrastra en el mapa)</span>';
+
+        await renderCleanerMapOverlay();
+        renderAuthorizedRequestsQueue();
+    }
+
+    // Mouse Events for Box Drawing on Map Canvas
+    if (cleanerMapWrapper) {
+        cleanerMapWrapper.addEventListener('mousedown', (e) => {
+            if (!cleanerSelectedArea) return;
+            const rect = cleanerMapWrapper.getBoundingClientRect();
+            isDrawingBox = true;
+            drawStartPx = {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+            if (drawingBoxPreview) {
+                drawingBoxPreview.style.left = `${drawStartPx.x}px`;
+                drawingBoxPreview.style.top = `${drawStartPx.y}px`;
+                drawingBoxPreview.style.width = '0px';
+                drawingBoxPreview.style.height = '0px';
+                drawingBoxPreview.classList.remove('hidden');
+            }
+        });
+
+        cleanerMapWrapper.addEventListener('mousemove', (e) => {
+            if (!isDrawingBox || !cleanerSelectedArea || !drawingBoxPreview) return;
+            const rect = cleanerMapWrapper.getBoundingClientRect();
+            const currentX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+            const currentY = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+
+            const minX = Math.min(drawStartPx.x, currentX);
+            const minY = Math.min(drawStartPx.y, currentY);
+            const width = Math.abs(currentX - drawStartPx.x);
+            const height = Math.abs(currentY - drawStartPx.y);
+
+            drawingBoxPreview.style.left = `${minX}px`;
+            drawingBoxPreview.style.top = `${minY}px`;
+            drawingBoxPreview.style.width = `${width}px`;
+            drawingBoxPreview.style.height = `${height}px`;
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (!isDrawingBox || !cleanerSelectedArea) return;
+            isDrawingBox = false;
+
+            const rect = cleanerMapWrapper.getBoundingClientRect();
+            const currentX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+            const currentY = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+
+            const minX = Math.min(drawStartPx.x, currentX);
+            const minY = Math.min(drawStartPx.y, currentY);
+            const widthPx = Math.abs(currentX - drawStartPx.x);
+            const heightPx = Math.abs(currentY - drawStartPx.y);
+
+            if (drawingBoxPreview) drawingBoxPreview.classList.add('hidden');
+
+            if (widthPx < 10 || heightPx < 10) return;
+
+            const xPercent = parseFloat(((minX / rect.width) * 100).toFixed(2));
+            const yPercent = parseFloat(((minY / rect.height) * 100).toFixed(2));
+            const widthPercent = parseFloat(((widthPx / rect.width) * 100).toFixed(2));
+            const heightPercent = parseFloat(((heightPx / rect.height) * 100).toFixed(2));
+
+            drawnBoxCoords = { xPercent, yPercent, widthPercent, heightPercent };
+            if (cleanerBoxText) {
+                cleanerBoxText.innerHTML = `<strong>Recuadro Listo:</strong> X=${xPercent}%, Y=${yPercent}%, Ancho=${widthPercent}%, Alto=${heightPercent}%`;
+            }
+            renderCleanerMapOverlay();
+        });
+    }
+
+    async function renderCleanerMapOverlay() {
+        if (!cleanerMapOverlay || !cleanerSelectedArea) return;
+        cleanerMapOverlay.innerHTML = '';
+
+        // Render measurement points as subtle pins
+        if (cleanerSelectedArea.points) {
+            cleanerSelectedArea.points.forEach(pt => {
+                const pin = document.createElement('div');
+                pin.className = 'map-pin';
+                if (pt.lastResistanceOhms > 1e8) pin.classList.add('high-resistance');
+                pin.style.left = `${pt.xPercent}%`;
+                pin.style.top = `${pt.yPercent}%`;
+                pin.style.opacity = '0.7';
+                pin.innerHTML = `<div class="pin-head" style="width:12px;height:12px;"><i class="fa-solid fa-bolt" style="font-size:0.5rem;"></i></div>`;
+                cleanerMapOverlay.appendChild(pin);
+            });
+        }
+
+        // Fetch & Render Cleaned Zones
+        try {
+            const res = await fetch(`/api/cleaning/zones/${cleanerSelectedArea.areaId}`);
+            if (res.ok) {
+                const zones = await res.json();
+                zones.forEach((z) => {
+                    const rect = document.createElement('div');
+                    rect.className = 'cleaned-zone-rect';
+                    rect.style.left = `${z.xPercent}%`;
+                    rect.style.top = `${z.yPercent}%`;
+                    rect.style.width = `${z.widthPercent}%`;
+                    rect.style.height = `${z.heightPercent}%`;
+
+                    const dateStr = new Date(z.cleanedDate).toLocaleDateString('es-MX');
+                    rect.innerHTML = `
+                        <div class="zone-label-badge">
+                            <i class="fa-solid fa-broom"></i> Limpiado: ${dateStr} (${z.cleanedBy || 'Personal'})
+                        </div>
+                    `;
+                    cleanerMapOverlay.appendChild(rect);
+                });
+            }
+        } catch (err) {
+            console.error('Error loading cleaned zones:', err);
+        }
+
+        // Render Active Drawn Box if currently selected
+        if (drawnBoxCoords) {
+            const activeRect = document.createElement('div');
+            activeRect.className = 'cleaned-zone-rect';
+            activeRect.style.left = `${drawnBoxCoords.xPercent}%`;
+            activeRect.style.top = `${drawnBoxCoords.yPercent}%`;
+            activeRect.style.width = `${drawnBoxCoords.widthPercent}%`;
+            activeRect.style.height = `${drawnBoxCoords.heightPercent}%`;
+            activeRect.style.borderColor = '#00f2fe';
+            activeRect.style.boxShadow = '0 0 20px #00f2fe';
+            activeRect.innerHTML = `<div class="zone-label-badge" style="color:#00f2fe; border-color:#00f2fe;"><i class="fa-solid fa-pencil"></i> Nuevo Recuadro Trazado</div>`;
+            cleanerMapOverlay.appendChild(activeRect);
+        }
+    }
+
+    function renderAuthorizedRequestsQueue() {
+        if (!authorizedQueueList || !cleanerReqIdSelect) return;
+
+        authorizedQueueList.innerHTML = '';
+        cleanerReqIdSelect.innerHTML = '<option value="">-- Sin Solicitud (Limpieza Directa de Rutina) --</option>';
+
+        const authorizedReqs = currentRequests.filter(r => r.status === 'AUTORIZADA' || r.authorizationStatus === 'AUTORIZADA');
+
+        if (authorizedReqs.length === 0) {
+            authorizedQueueList.innerHTML = '<div style="color:var(--text-dim); font-size:0.82rem; text-align:center; padding:1rem;"><i class="fa-solid fa-circle-check"></i> No hay solicitudes autorizadas pendientes.</div>';
+            return;
+        }
+
+        authorizedReqs.forEach(req => {
+            const opt = document.createElement('option');
+            opt.value = req.id;
+            opt.textContent = `${req.id} - ${req.areaName} (${req.reason})`;
+            cleanerReqIdSelect.appendChild(opt);
+
+            const card = document.createElement('div');
+            card.className = 'authorized-req-card';
+            if (cleanerReqIdSelect.value === req.id) card.classList.add('selected-for-clean');
+
+            const reqDateStr = new Date(req.requestDate).toLocaleDateString('es-MX');
+
+            card.innerHTML = `
+                <div class="req-card-info">
+                    <strong>${req.id} • ${req.areaName}</strong>
+                    <span><i class="fa-solid fa-triangle-exclamation"></i> ${req.reason} | Fecha: ${reqDateStr}</span>
+                </div>
+                <button type="button" class="btn-select-req" data-req-id="${req.id}" data-area-id="${req.areaId}" data-x="${req.coordXPercent}" data-y="${req.coordYPercent}">
+                    <i class="fa-solid fa-draw-polygon"></i> Trazar Limpieza
+                </button>
+            `;
+
+            authorizedQueueList.appendChild(card);
+        });
+
+        // Add Click event to Trazar Limpieza buttons
+        authorizedQueueList.querySelectorAll('.btn-select-req').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const reqId = btn.getAttribute('data-req-id');
+                const areaId = btn.getAttribute('data-area-id');
+                const x = parseFloat(btn.getAttribute('data-x'));
+                const y = parseFloat(btn.getAttribute('data-y'));
+
+                if (!cleanerSelectedArea || cleanerSelectedArea.areaId !== areaId) {
+                    selectCleanerArea(areaId);
+                }
+
+                cleanerReqIdSelect.value = reqId;
+                
+                // Pre-draw suggested box around request point (20% x 20%)
+                const w = 20;
+                const h = 20;
+                const minX = Math.max(0, x - w / 2);
+                const minY = Math.max(0, y - h / 2);
+
+                drawnBoxCoords = {
+                    xPercent: parseFloat(minX.toFixed(2)),
+                    yPercent: parseFloat(minY.toFixed(2)),
+                    widthPercent: w,
+                    heightPercent: h
+                };
+
+                cleanerBoxText.innerHTML = `<strong>Recuadro Sugerido por Solicitud ${reqId}:</strong> X=${drawnBoxCoords.xPercent}%, Y=${drawnBoxCoords.yPercent}%, W=${w}%, H=${h}%`;
+                
+                const targetReq = currentRequests.find(r => r.id === reqId);
+                if (targetReq && cleanerNotesInput) {
+                    cleanerNotesInput.value = `Limpieza realizada en atención a solicitud ${reqId}: ${targetReq.reason}`;
+                }
+
+                renderCleanerMapOverlay();
+                renderAuthorizedRequestsQueue();
+            });
+        });
+    }
+
+    if (formCleanerZone) {
+        formCleanerZone.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!cleanerSelectedArea) {
+                alert('Debe seleccionar un área de planta.');
+                return;
+            }
+
+            if (!drawnBoxCoords) {
+                alert('Debe dibujar un recuadro sobre el mapa de piso haciendo clic y arrastrando el ratón para definir la zona limpiada.');
+                return;
+            }
+
+            const dto = {
+                areaId: cleanerSelectedArea.areaId,
+                requestId: cleanerReqIdSelect.value || '',
+                xPercent: drawnBoxCoords.xPercent,
+                yPercent: drawnBoxCoords.yPercent,
+                widthPercent: drawnBoxCoords.widthPercent,
+                heightPercent: drawnBoxCoords.heightPercent,
+                cleanedDate: cleanerDateInput.value ? new Date(cleanerDateInput.value).toISOString() : new Date().toISOString(),
+                cleanedBy: cleanerByInput.value || 'Personal de Limpieza ESD',
+                notes: cleanerNotesInput.value || 'Limpieza realizada con recuadro en mapa'
+            };
+
+            try {
+                const res = await fetch('/api/cleaning/zones', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dto)
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    alert('¡Recuadro de área limpiada registrado con éxito!\n' + (dto.requestId ? `Estado de la solicitud ${dto.requestId} cambiado a LIMPIEZA_REALIZADA.` : ''));
+
+                    formCleanerZone.reset();
+                    if (cleanerDateInput) {
+                        const now = new Date();
+                        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                        cleanerDateInput.value = now.toISOString().slice(0, 16);
+                    }
+                    drawnBoxCoords = null;
+
+                    await loadMaps();
+                    await loadRequests();
+                    await selectCleanerArea(dto.areaId);
+                } else {
+                    const err = await res.json();
+                    alert('Error al registrar zona limpiada: ' + (err.message || 'Error del servidor'));
+                }
+            } catch (err) {
+                alert('Error de conexión: ' + err.message);
+            }
+        });
     }
 });

@@ -23,6 +23,7 @@ public class FloorMapConfig
     public int DaysSinceLastCleaning => Math.Max(0, (int)(DateTime.UtcNow - LastCleaningDate).TotalDays);
     public int DaysUntilNextCleaning => (int)(NextCleaningDate - DateTime.UtcNow).TotalDays;
     public List<MapPoint> Points { get; set; } = new();
+    public List<CleanedZone> CleanedZones { get; set; } = new();
     public string FloorType { get; set; } = "Loseta Conductiva con Cera Antiestática";
     public string StandardCompliance { get; set; } = "ANSI/ESD S20.20-2021";
 }

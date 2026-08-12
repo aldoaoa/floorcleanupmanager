@@ -277,6 +277,30 @@ public class CleaningController : ControllerBase
         return Ok(_supabaseSettings);
     }
 
+    [HttpGet("zones/{areaId}")]
+    public IActionResult GetCleanedZones(string areaId)
+    {
+        var zones = _storageService.GetCleanedZones(areaId);
+        return Ok(zones);
+    }
+
+    [HttpPost("zones")]
+    public IActionResult AddCleanedZone([FromBody] CreateCleanedZoneDto dto)
+    {
+        if (string.IsNullOrEmpty(dto.AreaId))
+            return BadRequest(new { message = "El área es obligatoria." });
+
+        try
+        {
+            var zone = _storageService.AddCleanedZone(dto);
+            return Ok(new { message = "Recuadro de área limpiada guardado correctamente.", zone });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     [HttpPost("settings")]
     public IActionResult UpdateSettings([FromBody] SupabaseSettings newSettings)
     {
