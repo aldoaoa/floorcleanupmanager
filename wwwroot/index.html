@@ -125,12 +125,10 @@
                             <label for="req-reason">Motivo de Limpieza: <span class="req">*</span></label>
                             <select id="req-reason" class="custom-select" required>
                                 <option value="">-- Seleccionar Motivo --</option>
-                                <option value="Resistencia Alta de ESD (> 1.0e8 Ω)">Resistencia ESD Alta (> 1.0e8 Ω - Degradación Cera)</option>
-                                <option value="Acumulación de Suciedad o Polvo Aislante">Acumulación de Suciedad o Polvo Aislante</option>
-                                <option value="Derrame de Químicos / Residuos de Flux">Derrame de Químicos / Residuos de Flux</option>
-                                <option value="Mantenimiento Programado (> 3 meses)">Mantenimiento Programado (> 3 meses)</option>
-                                <option value="Inspección de Calidad / Auditoría ESD">Inspección de Calidad / Auditoría ESD</option>
-                                <option value="Otro Motivo">Otro Motivo Espedífico</option>
+                                <option value="Piso manchado">Piso manchado</option>
+                                <option value="Piso con rayones">Piso con rayones</option>
+                                <option value="Resistencia eléctrica alta (superior a 1.0e8 ohms)">Resistencia eléctrica alta (superior a 1.0e8 ohms)</option>
+                                <option value="Otro motivo específico">Otro motivo específico</option>
                             </select>
                         </div>
 
@@ -140,8 +138,8 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="req-user">Solicitante / Usuario:</label>
-                            <input type="text" id="req-user" class="custom-input" value="Ing. Operaciones ESD" />
+                            <label for="req-user">Nombre del Solicitante: <span class="req">*</span></label>
+                            <input type="text" id="req-user" class="custom-input" placeholder="Nombre del solicitante" required />
                         </div>
 
                         <!-- Evidence Upload Section -->
@@ -440,7 +438,7 @@
 
     <!-- Footer -->
     <footer class="app-footer">
-        <p>Sistema de Solicitudes de Limpieza Cera Antiestática &copy; 2026. Cumplimiento con <strong>ANSI/ESD S20.20-2021</strong>. <span class="version-badge" id="app-version-badge">v1.0.1</span></p>
+        <p>Sistema de Solicitudes de Limpieza Cera Antiestática &copy; 2026. Cumplimiento con <strong>ANSI/ESD S20.20-2021</strong>. <span class="version-badge" id="app-version-badge">v1.0.2</span></p>
     </footer>
 
     <!-- App Script -->
