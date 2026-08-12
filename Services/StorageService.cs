@@ -173,6 +173,41 @@ public class StorageService
 
     public List<FloorMapConfig> GetMaps() => _mapConfigs;
 
+    public async Task<List<FloorMapConfig>> GetMapsAsync()
+    {
+        if (_supabaseService != null)
+        {
+            try
+            {
+                var sbMaps = await _supabaseService.GetMapsFromSupabaseAsync();
+                if (sbMaps != null && sbMaps.Any())
+                {
+                    foreach (var sbM in sbMaps)
+                    {
+                        var existing = _mapConfigs.FirstOrDefault(m => m.AreaId.Equals(sbM.AreaId, StringComparison.OrdinalIgnoreCase));
+                        if (existing == null)
+                        {
+                            _mapConfigs.Add(sbM);
+                        }
+                        else
+                        {
+                            if (!string.IsNullOrEmpty(sbM.AreaName)) existing.AreaName = sbM.AreaName;
+                            if (!string.IsNullOrEmpty(sbM.ImageUrl)) existing.ImageUrl = sbM.ImageUrl;
+                            if (!string.IsNullOrEmpty(sbM.Criticality)) existing.Criticality = sbM.Criticality;
+                            if (sbM.LastCleaningDate > existing.LastCleaningDate) existing.LastCleaningDate = sbM.LastCleaningDate;
+                        }
+                    }
+                    SaveToDisk();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[StorageService GetMapsAsync Exception] {ex.Message}");
+            }
+        }
+        return _mapConfigs;
+    }
+
     public FloorMapConfig? GetMapByAreaId(string areaId) => 
         _mapConfigs.FirstOrDefault(m => m.AreaId.Equals(areaId, StringComparison.OrdinalIgnoreCase));
 
@@ -204,6 +239,40 @@ public class StorageService
     }
 
     public List<CleaningRequest> GetRequests() => _requests.OrderByDescending(r => r.RequestDate).ToList();
+
+    public async Task<List<CleaningRequest>> GetRequestsAsync()
+    {
+        if (_supabaseService != null)
+        {
+            try
+            {
+                var sbRequests = await _supabaseService.GetRequestsFromSupabaseAsync();
+                if (sbRequests != null && sbRequests.Any())
+                {
+                    foreach (var sReq in sbRequests)
+                    {
+                        var existing = _requests.FirstOrDefault(r => r.Id.Equals(sReq.Id, StringComparison.OrdinalIgnoreCase));
+                        if (existing == null)
+                        {
+                            _requests.Add(sReq);
+                        }
+                        else
+                        {
+                            existing.Status = sReq.Status;
+                            existing.CompletedDate = sReq.CompletedDate;
+                            existing.CleanedBy = sReq.CleanedBy;
+                        }
+                    }
+                    SaveToDisk();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[StorageService GetRequestsAsync Exception] {ex.Message}");
+            }
+        }
+        return _requests.OrderByDescending(r => r.RequestDate).ToList();
+    }
 
     public CleaningRequest? GetRequestById(string id) => _requests.FirstOrDefault(r => r.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
 
@@ -263,6 +332,34 @@ public class StorageService
     public List<CleanedZone> GetCleanedZones(string areaId)
     {
         var map = GetMapByAreaId(areaId);
+        return map?.CleanedZones.OrderByDescending(z => z.CleanedDate).ToList() ?? new List<CleanedZone>();
+    }
+
+    public async Task<List<CleanedZone>> GetCleanedZonesAsync(string areaId)
+    {
+        var map = GetMapByAreaId(areaId);
+        if (_supabaseService != null && map != null)
+        {
+            try
+            {
+                var sbZones = await _supabaseService.GetCleanedZonesFromSupabaseAsync(areaId);
+                if (sbZones != null && sbZones.Any())
+                {
+                    foreach (var sbZ in sbZones)
+                    {
+                        if (!map.CleanedZones.Any(z => z.Id == sbZ.Id))
+                        {
+                            map.CleanedZones.Add(sbZ);
+                        }
+                    }
+                    SaveToDisk();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[StorageService GetCleanedZonesAsync Exception] {ex.Message}");
+            }
+        }
         return map?.CleanedZones.OrderByDescending(z => z.CleanedDate).ToList() ?? new List<CleanedZone>();
     }
 

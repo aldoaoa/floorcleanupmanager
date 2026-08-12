@@ -30,4 +30,16 @@ public class FloorCleaningRecord
 
     [JsonPropertyName("request_id")]
     public string RequestId { get; set; } = string.Empty;
+
+    [JsonPropertyName("x_percent")]
+    public double XPercent { get; set; } = 10.0;
+
+    [JsonPropertyName("y_percent")]
+    public double YPercent { get; set; } = 10.0;
+
+    [JsonPropertyName("width_percent")]
+    public double WidthPercent { get; set; } = 20.0;
+
+    [JsonPropertyName("height_percent")]
+    public double HeightPercent { get; set; } = 20.0;
 }

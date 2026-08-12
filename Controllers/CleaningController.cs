@@ -28,7 +28,7 @@ public class CleaningController : ControllerBase
     [HttpGet("maps")]
     public async Task<IActionResult> GetMaps()
     {
-        var maps = _storageService.GetMaps();
+        var maps = await _storageService.GetMapsAsync();
         foreach (var map in maps)
         {
             var measurements = await _supabaseService.GetMeasurementsForAreaAsync(map.AreaId);
@@ -199,9 +199,10 @@ public class CleaningController : ControllerBase
     }
 
     [HttpGet("requests")]
-    public IActionResult GetRequests()
+    public async Task<IActionResult> GetRequests()
     {
-        return Ok(_storageService.GetRequests());
+        var requests = await _storageService.GetRequestsAsync();
+        return Ok(requests);
     }
 
     [HttpPost("requests")]
@@ -244,7 +245,7 @@ public class CleaningController : ControllerBase
         // Apply ANSI/ESD S20.20-2021 & 3-month rule evaluation engine
         var evaluatedRequest = _evaluationEngine.EvaluateRequest(request, mapConfig, nearestMeasurement);
 
-        // Store request
+        // Store request and sync to Supabase
         _storageService.SaveRequest(evaluatedRequest);
 
         return Ok(new
@@ -278,9 +279,9 @@ public class CleaningController : ControllerBase
     }
 
     [HttpGet("zones/{areaId}")]
-    public IActionResult GetCleanedZones(string areaId)
+    public async Task<IActionResult> GetCleanedZones(string areaId)
     {
-        var zones = _storageService.GetCleanedZones(areaId);
+        var zones = await _storageService.GetCleanedZonesAsync(areaId);
         return Ok(zones);
     }
 

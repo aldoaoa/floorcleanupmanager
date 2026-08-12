@@ -459,4 +459,169 @@ public class SupabaseService
             Console.WriteLine($"[Supabase Points Sync Exception] {ex.Message}");
         }
     }
+
+    public async Task<List<CleaningRequest>> GetRequestsFromSupabaseAsync()
+    {
+        var result = new List<CleaningRequest>();
+        if (string.IsNullOrEmpty(_settings.Url) || _settings.Url.Contains("your-project")) return result;
+
+        try
+        {
+            string endpoint = $"{_settings.Url.TrimEnd('/')}/rest/v1/solicitudes_limpieza?select=*&order=request_date.desc";
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, endpoint);
+            httpRequest.Headers.Add("apikey", _settings.AnonKey);
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.AnonKey);
+
+            var response = await _httpClient.SendAsync(httpRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                string json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var elem in doc.RootElement.EnumerateArray())
+                    {
+                        var req = new CleaningRequest
+                        {
+                            Id = GetPropertyString(elem, "id") ?? Guid.NewGuid().ToString(),
+                            AreaId = GetPropertyString(elem, "area_id", "cuarto") ?? "",
+                            AreaName = GetPropertyString(elem, "area_name") ?? "",
+                            CoordXPercent = GetPropertyDouble(elem, "coord_x") ?? 0,
+                            CoordYPercent = GetPropertyDouble(elem, "coord_y") ?? 0,
+                            Reason = GetPropertyString(elem, "reason") ?? "",
+                            DetailedNotes = GetPropertyString(elem, "notes") ?? "",
+                            RequestedBy = GetPropertyString(elem, "requested_by") ?? "Operador ESD",
+                            Priority = GetPropertyString(elem, "priority") ?? "MEDIA",
+                            Status = GetPropertyString(elem, "status") ?? "AUTORIZADA",
+                            AuthorizationStatus = GetPropertyString(elem, "status") ?? "AUTORIZADA",
+                            EvidenceUrl = GetPropertyString(elem, "evidence_url") ?? "",
+                            EvidenceFileType = GetPropertyString(elem, "evidence_file_type") ?? "",
+                            EvidenceFileName = GetPropertyString(elem, "evidence_file_name") ?? "",
+                            LastEsdResistanceOhms = GetPropertyDouble(elem, "resistance_ohms") ?? 4.5e7,
+                            CleanedBy = GetPropertyString(elem, "cleaned_by") ?? ""
+                        };
+
+                        string? reqDateStr = GetPropertyString(elem, "request_date");
+                        if (!string.IsNullOrEmpty(reqDateStr) && DateTimeOffset.TryParse(reqDateStr, out var dtoReq))
+                            req.RequestDate = dtoReq.UtcDateTime;
+
+                        string? compDateStr = GetPropertyString(elem, "completed_date");
+                        if (!string.IsNullOrEmpty(compDateStr) && DateTimeOffset.TryParse(compDateStr, out var dtoComp))
+                            req.CompletedDate = dtoComp.UtcDateTime;
+
+                        result.Add(req);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Supabase solicitudes_limpieza Fetch Error] {ex.Message}");
+        }
+
+        return result;
+    }
+
+    public async Task<List<FloorMapConfig>> GetMapsFromSupabaseAsync()
+    {
+        var result = new List<FloorMapConfig>();
+        if (string.IsNullOrEmpty(_settings.Url) || _settings.Url.Contains("your-project")) return result;
+
+        try
+        {
+            string endpoint = $"{_settings.Url.TrimEnd('/')}/rest/v1/configuracion_mapas?select=*";
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, endpoint);
+            httpRequest.Headers.Add("apikey", _settings.AnonKey);
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.AnonKey);
+
+            var response = await _httpClient.SendAsync(httpRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                string json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var elem in doc.RootElement.EnumerateArray())
+                    {
+                        var map = new FloorMapConfig
+                        {
+                            AreaId = GetPropertyString(elem, "area_id") ?? "",
+                            AreaName = GetPropertyString(elem, "area_name") ?? "",
+                            ImageUrl = GetPropertyString(elem, "image_url") ?? "",
+                            Criticality = GetPropertyString(elem, "criticality") ?? "MEDIA",
+                            FloorType = GetPropertyString(elem, "floor_type") ?? "Loseta Conductiva con Cera Antiestática",
+                            StandardCompliance = GetPropertyString(elem, "standard_compliance") ?? "ANSI/ESD S20.20-2021"
+                        };
+
+                        string? cleanDateStr = GetPropertyString(elem, "last_cleaning_date");
+                        if (!string.IsNullOrEmpty(cleanDateStr) && DateTimeOffset.TryParse(cleanDateStr, out var dtoClean))
+                            map.LastCleaningDate = dtoClean.UtcDateTime;
+
+                        if (!string.IsNullOrEmpty(map.AreaId)) result.Add(map);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Supabase configuracion_mapas Fetch Error] {ex.Message}");
+        }
+
+        return result;
+    }
+
+    public async Task<List<CleanedZone>> GetCleanedZonesFromSupabaseAsync(string areaId)
+    {
+        var result = new List<CleanedZone>();
+        if (string.IsNullOrEmpty(_settings.Url) || _settings.Url.Contains("your-project")) return result;
+
+        try
+        {
+            string endpoint = $"{_settings.Url.TrimEnd('/')}/rest/v1/limpiezas_piso?select=*&order=fecha_limpieza.desc";
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, endpoint);
+            httpRequest.Headers.Add("apikey", _settings.AnonKey);
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.AnonKey);
+
+            var response = await _httpClient.SendAsync(httpRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                string json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var elem in doc.RootElement.EnumerateArray())
+                    {
+                        string cuarto = GetPropertyString(elem, "cuarto", "area_id") ?? "";
+                        if (CleanString(cuarto) == CleanString(areaId) || string.IsNullOrEmpty(areaId))
+                        {
+                            var zone = new CleanedZone
+                            {
+                                Id = GetPropertyString(elem, "id") ?? Guid.NewGuid().ToString(),
+                                AreaId = cuarto,
+                                RequestId = GetPropertyString(elem, "request_id") ?? "",
+                                XPercent = GetPropertyDouble(elem, "x_percent", "coord_x") ?? 10.0,
+                                YPercent = GetPropertyDouble(elem, "y_percent", "coord_y") ?? 10.0,
+                                WidthPercent = GetPropertyDouble(elem, "width_percent", "ancho") ?? 20.0,
+                                HeightPercent = GetPropertyDouble(elem, "height_percent", "alto") ?? 20.0,
+                                CleanedBy = GetPropertyString(elem, "limpiado_por", "tecnico") ?? "Personal de Limpieza ESD",
+                                Notes = GetPropertyString(elem, "observaciones", "notas") ?? ""
+                            };
+
+                            string? dateStr = GetPropertyString(elem, "fecha_limpieza");
+                            if (!string.IsNullOrEmpty(dateStr) && DateTimeOffset.TryParse(dateStr, out var dto))
+                                zone.CleanedDate = dto.UtcDateTime;
+
+                            result.Add(zone);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Supabase limpiezas_piso Fetch Zones Error] {ex.Message}");
+        }
+
+        return result;
+    }
 }
