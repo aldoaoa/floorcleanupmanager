@@ -193,8 +193,6 @@ public class StorageService
 
     public async Task<List<FloorMapConfig>> GetMapsAsync()
     {
-        if (!_mapConfigs.Any()) SeedDefaultMaps();
-
         if (_supabaseService != null)
         {
             try
@@ -202,22 +200,9 @@ public class StorageService
                 var sbMaps = await _supabaseService.GetMapsFromSupabaseAsync();
                 if (sbMaps != null && sbMaps.Any())
                 {
-                    foreach (var sbM in sbMaps)
-                    {
-                        var existing = _mapConfigs.FirstOrDefault(m => m.AreaId.Equals(sbM.AreaId, StringComparison.OrdinalIgnoreCase));
-                        if (existing == null)
-                        {
-                            _mapConfigs.Add(sbM);
-                        }
-                        else
-                        {
-                            if (!string.IsNullOrEmpty(sbM.AreaName)) existing.AreaName = sbM.AreaName;
-                            if (!string.IsNullOrEmpty(sbM.ImageUrl)) existing.ImageUrl = sbM.ImageUrl;
-                            if (!string.IsNullOrEmpty(sbM.Criticality)) existing.Criticality = sbM.Criticality;
-                            if (sbM.LastCleaningDate > existing.LastCleaningDate) existing.LastCleaningDate = sbM.LastCleaningDate;
-                        }
-                    }
-                    SaveToDisk();
+                    _mapConfigs.Clear();
+                    _mapConfigs.AddRange(sbMaps);
+                    return _mapConfigs;
                 }
             }
             catch (Exception ex)
@@ -225,6 +210,8 @@ public class StorageService
                 Console.WriteLine($"[StorageService GetMapsAsync Exception] {ex.Message}");
             }
         }
+
+        if (!_mapConfigs.Any()) SeedDefaultMaps();
         return _mapConfigs;
     }
 
@@ -239,7 +226,6 @@ public class StorageService
             _mapConfigs.Remove(existing);
         }
         _mapConfigs.Add(config);
-        SaveToDisk();
         _ = _supabaseService?.SyncMapToSupabaseAsync(config);
         if (config.Points != null && config.Points.Any())
         {
@@ -253,7 +239,6 @@ public class StorageService
         if (existing == null) return false;
 
         _mapConfigs.Remove(existing);
-        SaveToDisk();
         _ = _supabaseService?.DeleteMapFromSupabaseAsync(areaId);
         return true;
     }
@@ -266,8 +251,6 @@ public class StorageService
 
     public async Task<List<CleaningRequest>> GetRequestsAsync()
     {
-        if (!_requests.Any()) SeedDefaultRequests();
-
         if (_supabaseService != null)
         {
             try
@@ -275,21 +258,9 @@ public class StorageService
                 var sbRequests = await _supabaseService.GetRequestsFromSupabaseAsync();
                 if (sbRequests != null && sbRequests.Any())
                 {
-                    foreach (var sReq in sbRequests)
-                    {
-                        var existing = _requests.FirstOrDefault(r => r.Id.Equals(sReq.Id, StringComparison.OrdinalIgnoreCase));
-                        if (existing == null)
-                        {
-                            _requests.Add(sReq);
-                        }
-                        else
-                        {
-                            existing.Status = sReq.Status;
-                            existing.CompletedDate = sReq.CompletedDate;
-                            existing.CleanedBy = sReq.CleanedBy;
-                        }
-                    }
-                    SaveToDisk();
+                    _requests.Clear();
+                    _requests.AddRange(sbRequests);
+                    return _requests.OrderByDescending(r => r.RequestDate).ToList();
                 }
             }
             catch (Exception ex)
@@ -297,6 +268,8 @@ public class StorageService
                 Console.WriteLine($"[StorageService GetRequestsAsync Exception] {ex.Message}");
             }
         }
+
+        if (!_requests.Any()) SeedDefaultRequests();
         return _requests.OrderByDescending(r => r.RequestDate).ToList();
     }
 
