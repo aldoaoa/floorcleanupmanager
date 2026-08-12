@@ -61,13 +61,19 @@ public class StorageService
                 {
                     string json = File.ReadAllText(_dataFilePath);
                     var payload = JsonSerializer.Deserialize<StorageDataPayload>(json);
-                    if (payload != null && payload.Maps.Any())
+                    if (payload != null)
                     {
-                        _mapConfigs.Clear();
-                        _mapConfigs.AddRange(payload.Maps);
-                        _requests.Clear();
-                        _requests.AddRange(payload.Requests);
-                        return;
+                        if (payload.Maps != null && payload.Maps.Any())
+                        {
+                            _mapConfigs.Clear();
+                            _mapConfigs.AddRange(payload.Maps);
+                        }
+
+                        if (payload.Requests != null && payload.Requests.Any())
+                        {
+                            _requests.Clear();
+                            _requests.AddRange(payload.Requests);
+                        }
                     }
                 }
             }
@@ -76,8 +82,16 @@ public class StorageService
                 Console.WriteLine($"[Storage Load Error] {ex.Message}. Initializing seeds.");
             }
 
-            SeedDefaultMaps();
-            SeedDefaultRequests();
+            if (!_mapConfigs.Any())
+            {
+                SeedDefaultMaps();
+            }
+
+            if (!_requests.Any())
+            {
+                SeedDefaultRequests();
+            }
+
             SaveToDisk();
         }
     }
@@ -171,10 +185,16 @@ public class StorageService
         });
     }
 
-    public List<FloorMapConfig> GetMaps() => _mapConfigs;
+    public List<FloorMapConfig> GetMaps()
+    {
+        if (!_mapConfigs.Any()) SeedDefaultMaps();
+        return _mapConfigs;
+    }
 
     public async Task<List<FloorMapConfig>> GetMapsAsync()
     {
+        if (!_mapConfigs.Any()) SeedDefaultMaps();
+
         if (_supabaseService != null)
         {
             try
@@ -238,10 +258,16 @@ public class StorageService
         return true;
     }
 
-    public List<CleaningRequest> GetRequests() => _requests.OrderByDescending(r => r.RequestDate).ToList();
+    public List<CleaningRequest> GetRequests()
+    {
+        if (!_requests.Any()) SeedDefaultRequests();
+        return _requests.OrderByDescending(r => r.RequestDate).ToList();
+    }
 
     public async Task<List<CleaningRequest>> GetRequestsAsync()
     {
+        if (!_requests.Any()) SeedDefaultRequests();
+
         if (_supabaseService != null)
         {
             try
