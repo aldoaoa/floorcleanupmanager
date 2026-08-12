@@ -570,51 +570,7 @@ public class SupabaseService
     {
         var mapDict = new Dictionary<string, FloorMapConfig>(StringComparer.OrdinalIgnoreCase);
 
-        // 1. Build maps dynamically from Supabase validacion_piso
-        try
-        {
-            var measurements = await GetMeasurementsForAreaAsync("");
-            var groupedByArea = measurements.GroupBy(m => string.IsNullOrEmpty(m.AreaId) ? "Cuarto 1" : m.AreaId);
-
-            foreach (var group in groupedByArea)
-            {
-                string areaId = group.Key;
-                var points = group.Select(m => new MapPoint
-                {
-                    Id = m.PointId,
-                    Code = m.PointId,
-                    Label = string.IsNullOrEmpty(m.PointName) ? $"Punto {m.PointId}" : m.PointName,
-                    XPercent = m.CoordX,
-                    YPercent = m.CoordY,
-                    ZoneType = "SMT",
-                    LastResistanceOhms = m.ResistanceOhms,
-                    LastMeasurementDate = m.MeasurementDate
-                }).ToList();
-
-                bool isHighRisk = points.Any(p => p.LastResistanceOhms > 1e8);
-                string imageUrl = GetImageUrlForArea(areaId);
-
-                var mapConfig = new FloorMapConfig
-                {
-                    AreaId = areaId,
-                    AreaName = GetAreaDisplayName(areaId),
-                    ImageUrl = imageUrl,
-                    Criticality = isHighRisk ? "ALTA" : "MEDIA",
-                    FloorType = "Loseta Conductiva con Cera Antiestática",
-                    StandardCompliance = "ANSI/ESD S20.20-2021",
-                    LastCleaningDate = DateTime.UtcNow.AddDays(-100),
-                    Points = points
-                };
-
-                mapDict[areaId] = mapConfig;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Supabase Build Maps Error] {ex.Message}");
-        }
-
-        // 2. Fetch custom overrides from configuracion_mapas if present in Supabase
+        // 1. Fetch maps from configuracion_mapas in Supabase
         try
         {
             string endpoint = $"{_settings.Url.TrimEnd('/')}/rest/v1/configuracion_mapas?select=*";
@@ -634,24 +590,21 @@ public class SupabaseService
                         string areaId = GetPropertyString(elem, "area_id") ?? "";
                         if (string.IsNullOrEmpty(areaId)) continue;
 
-                        if (!mapDict.TryGetValue(areaId, out var map))
+                        var map = new FloorMapConfig
                         {
-                            map = new FloorMapConfig { AreaId = areaId };
-                            mapDict[areaId] = map;
-                        }
-
-                        string? name = GetPropertyString(elem, "area_name");
-                        if (!string.IsNullOrEmpty(name)) map.AreaName = name;
-
-                        string? img = GetPropertyString(elem, "image_url");
-                        if (!string.IsNullOrEmpty(img)) map.ImageUrl = img;
-
-                        string? crit = GetPropertyString(elem, "criticality");
-                        if (!string.IsNullOrEmpty(crit)) map.Criticality = crit;
+                            AreaId = areaId,
+                            AreaName = GetPropertyString(elem, "area_name") ?? GetAreaDisplayName(areaId),
+                            ImageUrl = GetPropertyString(elem, "image_url") ?? GetImageUrlForArea(areaId),
+                            Criticality = GetPropertyString(elem, "criticality") ?? "MEDIA",
+                            FloorType = GetPropertyString(elem, "floor_type") ?? "Loseta Conductiva con Cera Antiestática",
+                            StandardCompliance = GetPropertyString(elem, "standard_compliance") ?? "ANSI/ESD S20.20-2021"
+                        };
 
                         string? cleanDateStr = GetPropertyString(elem, "last_cleaning_date");
                         if (!string.IsNullOrEmpty(cleanDateStr) && DateTimeOffset.TryParse(cleanDateStr, out var dtoClean))
                             map.LastCleaningDate = dtoClean.UtcDateTime;
+
+                        mapDict[areaId] = map;
                     }
                 }
             }
@@ -659,6 +612,114 @@ public class SupabaseService
         catch (Exception ex)
         {
             Console.WriteLine($"[Supabase configuracion_mapas Fetch Error] {ex.Message}");
+        }
+
+        // 2. Fetch points from puntos_medicion_esd in Supabase
+        try
+        {
+            string endpoint = $"{_settings.Url.TrimEnd('/')}/rest/v1/puntos_medicion_esd?select=*";
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, endpoint);
+            httpRequest.Headers.Add("apikey", _settings.AnonKey);
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.AnonKey);
+
+            var response = await _httpClient.SendAsync(httpRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                string json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var elem in doc.RootElement.EnumerateArray())
+                    {
+                        string areaId = GetPropertyString(elem, "area_id", "cuarto") ?? "";
+                        if (string.IsNullOrEmpty(areaId)) continue;
+
+                        if (!mapDict.TryGetValue(areaId, out var map))
+                        {
+                            map = new FloorMapConfig
+                            {
+                                AreaId = areaId,
+                                AreaName = GetAreaDisplayName(areaId),
+                                ImageUrl = GetImageUrlForArea(areaId)
+                            };
+                            mapDict[areaId] = map;
+                        }
+
+                        var pt = new MapPoint
+                        {
+                            Id = GetPropertyString(elem, "id", "code") ?? Guid.NewGuid().ToString(),
+                            Code = GetPropertyString(elem, "code", "id") ?? "1",
+                            Label = GetPropertyString(elem, "label", "nombre") ?? "Punto de Medición ESD",
+                            XPercent = GetPropertyDouble(elem, "x_percent", "coord_x") ?? 10.0,
+                            YPercent = GetPropertyDouble(elem, "y_percent", "coord_y") ?? 10.0,
+                            ZoneType = GetPropertyString(elem, "zone_type") ?? "SMT",
+                            LastResistanceOhms = GetPropertyDouble(elem, "last_resistance_ohms", "medicion_ohms") ?? 4.5e7
+                        };
+
+                        if (map.Points == null) map.Points = new List<MapPoint>();
+                        if (!map.Points.Any(p => p.Id == pt.Id || p.Code == pt.Code))
+                        {
+                            map.Points.Add(pt);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Supabase puntos_medicion_esd Fetch Error] {ex.Message}");
+        }
+
+        // 3. Fallback/Augment from validacion_piso if points or maps are empty
+        try
+        {
+            var measurements = await GetMeasurementsForAreaAsync("");
+            if (measurements != null && measurements.Any())
+            {
+                var groupedByArea = measurements.GroupBy(m => string.IsNullOrEmpty(m.AreaId) ? "Cuarto 1" : m.AreaId);
+                foreach (var group in groupedByArea)
+                {
+                    string areaId = group.Key;
+                    if (!mapDict.TryGetValue(areaId, out var map))
+                    {
+                        map = new FloorMapConfig
+                        {
+                            AreaId = areaId,
+                            AreaName = GetAreaDisplayName(areaId),
+                            ImageUrl = GetImageUrlForArea(areaId)
+                        };
+                        mapDict[areaId] = map;
+                    }
+
+                    if (map.Points == null || !map.Points.Any())
+                    {
+                        map.Points = group.Select(m => new MapPoint
+                        {
+                            Id = m.PointId,
+                            Code = m.PointId,
+                            Label = string.IsNullOrEmpty(m.PointName) ? $"Punto {m.PointId}" : m.PointName,
+                            XPercent = m.CoordX,
+                            YPercent = m.CoordY,
+                            ZoneType = "SMT",
+                            LastResistanceOhms = m.ResistanceOhms,
+                            LastMeasurementDate = m.MeasurementDate
+                        }).ToList();
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Supabase validacion_piso Augment Error] {ex.Message}");
+        }
+
+        // 4. Set criticality from points
+        foreach (var m in mapDict.Values)
+        {
+            if (m.Points != null && m.Points.Any(p => p.LastResistanceOhms > 1e8))
+            {
+                m.Criticality = "ALTA";
+            }
         }
 
         return mapDict.Values.ToList();

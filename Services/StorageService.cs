@@ -187,7 +187,6 @@ public class StorageService
 
     public List<FloorMapConfig> GetMaps()
     {
-        if (!_mapConfigs.Any()) SeedDefaultMaps();
         return _mapConfigs;
     }
 
@@ -198,7 +197,7 @@ public class StorageService
             try
             {
                 var sbMaps = await _supabaseService.GetMapsFromSupabaseAsync();
-                if (sbMaps != null && sbMaps.Any())
+                if (sbMaps != null)
                 {
                     _mapConfigs.Clear();
                     _mapConfigs.AddRange(sbMaps);
@@ -210,8 +209,6 @@ public class StorageService
                 Console.WriteLine($"[StorageService GetMapsAsync Exception] {ex.Message}");
             }
         }
-
-        if (!_mapConfigs.Any()) SeedDefaultMaps();
         return _mapConfigs;
     }
 
@@ -245,7 +242,6 @@ public class StorageService
 
     public List<CleaningRequest> GetRequests()
     {
-        if (!_requests.Any()) SeedDefaultRequests();
         return _requests.OrderByDescending(r => r.RequestDate).ToList();
     }
 
@@ -256,7 +252,7 @@ public class StorageService
             try
             {
                 var sbRequests = await _supabaseService.GetRequestsFromSupabaseAsync();
-                if (sbRequests != null && sbRequests.Any())
+                if (sbRequests != null)
                 {
                     _requests.Clear();
                     _requests.AddRange(sbRequests);
@@ -268,8 +264,6 @@ public class StorageService
                 Console.WriteLine($"[StorageService GetRequestsAsync Exception] {ex.Message}");
             }
         }
-
-        if (!_requests.Any()) SeedDefaultRequests();
         return _requests.OrderByDescending(r => r.RequestDate).ToList();
     }
 
