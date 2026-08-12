@@ -626,6 +626,38 @@ public class SupabaseService
             Console.WriteLine($"[Supabase puntos_medicion_esd Fetch Error] {ex.Message}");
         }
 
+        // 3. Link real measurements from validacion_piso to mapped points
+        try
+        {
+            var measurements = await GetMeasurementsForAreaAsync("");
+            if (measurements != null && measurements.Any())
+            {
+                foreach (var map in mapDict.Values)
+                {
+                    if (map.Points != null)
+                    {
+                        var areaMeasurements = measurements.Where(m => string.Equals(CleanString(m.AreaId), CleanString(map.AreaId), StringComparison.OrdinalIgnoreCase)).ToList();
+                        foreach (var pt in map.Points)
+                        {
+                            var match = areaMeasurements
+                                .Where(m => CleanString(m.PointId) == CleanString(pt.Code) || CleanString(m.PointId) == CleanString(pt.Label))
+                                .OrderByDescending(m => m.MeasurementDate)
+                                .FirstOrDefault();
+
+                            if (match != null)
+                            {
+                                pt.LastResistanceOhms = match.ResistanceOhms;
+                                pt.LastMeasurementDate = match.MeasurementDate;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Supabase Link Measurements Error] {ex.Message}");
+        }
 
         // Set criticality from points
         foreach (var m in mapDict.Values)
