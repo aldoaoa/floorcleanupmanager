@@ -1,0 +1,6 @@
+C:\Users\OrozcoA\.gemini\antigravity\scratch\esd-cleaning-system\publish\EsdCleaningSystem.exe
+C:\Users\OrozcoA\.gemini\antigravity\scratch\esd-cleaning-system\publish\Data\esd_data_store.json
+C:\Users\OrozcoA\.gemini\antigravity\scratch\esd-cleaning-system\publish\EsdCleaningSystem.dll
+C:\Users\OrozcoA\.gemini\antigravity\scratch\esd-cleaning-system\publish\EsdCleaningSystem.deps.json
+C:\Users\OrozcoA\.gemini\antigravity\scratch\esd-cleaning-system\publish\EsdCleaningSystem.runtimeconfig.json
+C:\Users\OrozcoA\.gemini\antigravity\scratch\esd-cleaning-system\publish\EsdCleaningSystem.pdb

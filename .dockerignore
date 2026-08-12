@@ -1,0 +1,7 @@
+.git
+.gitignore
+.vs
+bin
+obj
+out
+Data/esd_data_store.json

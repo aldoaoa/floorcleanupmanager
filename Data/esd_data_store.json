@@ -1,0 +1,1046 @@
+{
+  "Maps": [
+    {
+      "AreaId": "Cuarto 1",
+      "AreaName": "Clean Room 1",
+      "ImageUrl": "/uploads/a225e05c-e4ff-4a94-a17e-d6ae699e834e_1.png",
+      "Criticality": "ALTA",
+      "LastCleaningDate": "2026-05-02T21:38:30.405531Z",
+      "NextCleaningDate": "2026-07-31T21:38:30.405531Z",
+      "DaysSinceLastCleaning": 100,
+      "DaysUntilNextCleaning": -10,
+      "Points": [
+        {
+          "Id": "1",
+          "Code": "1",
+          "Label": "Punto de Medici\u00F3n 1",
+          "XPercent": 7.48,
+          "YPercent": 96.85,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 896000,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "2",
+          "Code": "2",
+          "Label": "Punto de Medici\u00F3n 2",
+          "XPercent": 38.32,
+          "YPercent": 97.43,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 157000,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "3",
+          "Code": "3",
+          "Label": "Punto de Medici\u00F3n 3",
+          "XPercent": 81.06,
+          "YPercent": 96.92,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 32400,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "4",
+          "Code": "4",
+          "Label": "Punto de Medici\u00F3n 4",
+          "XPercent": 91.23,
+          "YPercent": 84.51,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 6220000000,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "5",
+          "Code": "5",
+          "Label": "Punto de Medici\u00F3n 5",
+          "XPercent": 76.98,
+          "YPercent": 84.58,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 91400,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "6",
+          "Code": "6",
+          "Label": "Punto de Medici\u00F3n 6",
+          "XPercent": 38.39,
+          "YPercent": 84.58,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 4620000000,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "7",
+          "Code": "7",
+          "Label": "Punto de Medici\u00F3n 7",
+          "XPercent": 8.86,
+          "YPercent": 70.16,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 333000,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "8",
+          "Code": "8",
+          "Label": "Punto de Medici\u00F3n 8",
+          "XPercent": 38.53,
+          "YPercent": 69.45,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 108000,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "9",
+          "Code": "9",
+          "Label": "Punto de Medici\u00F3n 9",
+          "XPercent": 74.77,
+          "YPercent": 69.84,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 690000,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "10",
+          "Code": "10",
+          "Label": "Punto de Medici\u00F3n 10",
+          "XPercent": 85.07,
+          "YPercent": 56.59,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 503000,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "11",
+          "Code": "11",
+          "Label": "Punto de Medici\u00F3n 11",
+          "XPercent": 38.39,
+          "YPercent": 57.11,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 48400,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "12",
+          "Code": "12",
+          "Label": "Punto de Medici\u00F3n 12",
+          "XPercent": 37.98,
+          "YPercent": 38.99,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 53300,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "13",
+          "Code": "13",
+          "Label": "Punto de Medici\u00F3n 13",
+          "XPercent": 94.06,
+          "YPercent": 38.34,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 118000,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "14",
+          "Code": "14",
+          "Label": "Punto de Medici\u00F3n 14",
+          "XPercent": 32.38,
+          "YPercent": 25.68,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 36400,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        },
+        {
+          "Id": "15",
+          "Code": "15",
+          "Label": "Punto de Medici\u00F3n 15",
+          "XPercent": 89.29,
+          "YPercent": 9.64,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 473000,
+          "LastMeasurementDate": "2026-06-09T16:05:55.189645Z"
+        }
+      ],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "Cuarto 3",
+      "AreaName": "Clean Room 3",
+      "ImageUrl": "/uploads/00e6a74a-acea-4d68-b0fb-641cf8aa69a7_3.png",
+      "Criticality": "MEDIA",
+      "LastCleaningDate": "2026-05-02T21:55:22.3068028Z",
+      "NextCleaningDate": "2026-07-31T21:55:22.3068028Z",
+      "DaysSinceLastCleaning": 100,
+      "DaysUntilNextCleaning": -10,
+      "Points": [
+        {
+          "Id": "1",
+          "Code": "1",
+          "Label": "Punto de Medici\u00F3n 1",
+          "XPercent": 10.52,
+          "YPercent": 88.46,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 1020000000,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "2",
+          "Code": "2",
+          "Label": "Punto de Medici\u00F3n 2",
+          "XPercent": 18.75,
+          "YPercent": 63.77,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 81300,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "3",
+          "Code": "3",
+          "Label": "Punto de Medici\u00F3n 3",
+          "XPercent": 18.2,
+          "YPercent": 30.17,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 195000,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "4",
+          "Code": "4",
+          "Label": "Punto de Medici\u00F3n 4",
+          "XPercent": 37.98,
+          "YPercent": 14.04,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 39900,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "5",
+          "Code": "5",
+          "Label": "Punto de Medici\u00F3n 5",
+          "XPercent": 48.35,
+          "YPercent": 5.77,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 97300,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "6",
+          "Code": "6",
+          "Label": "Punto de Medici\u00F3n 6",
+          "XPercent": 89.36,
+          "YPercent": 11.12,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 415000,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "7",
+          "Code": "7",
+          "Label": "Punto de Medici\u00F3n 7",
+          "XPercent": 79.61,
+          "YPercent": 27.03,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 512000,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "8",
+          "Code": "8",
+          "Label": "Punto de Medici\u00F3n 8",
+          "XPercent": 49.66,
+          "YPercent": 38.59,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 606000,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "9",
+          "Code": "9",
+          "Label": "Punto de Medici\u00F3n 9",
+          "XPercent": 34.17,
+          "YPercent": 50.86,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 13500000,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "10",
+          "Code": "10",
+          "Label": "Punto de Medici\u00F3n 10",
+          "XPercent": 41.23,
+          "YPercent": 71.26,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 61300000,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "11",
+          "Code": "11",
+          "Label": "Punto de Medici\u00F3n 11",
+          "XPercent": 32.72,
+          "YPercent": 88.1,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 1530000000,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "12",
+          "Code": "12",
+          "Label": "Punto de Medici\u00F3n 12",
+          "XPercent": 62.11,
+          "YPercent": 59.42,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 83800,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "13",
+          "Code": "13",
+          "Label": "Punto de Medici\u00F3n 13",
+          "XPercent": 66.61,
+          "YPercent": 81.82,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 271000,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "14",
+          "Code": "14",
+          "Label": "Punto de Medici\u00F3n 14",
+          "XPercent": 79.54,
+          "YPercent": 71.12,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 132000,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        },
+        {
+          "Id": "15",
+          "Code": "15",
+          "Label": "Punto de Medici\u00F3n 15",
+          "XPercent": 92.68,
+          "YPercent": 57.99,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 149000,
+          "LastMeasurementDate": "2026-06-09T17:11:39.730422Z"
+        }
+      ],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "Cuarto 4",
+      "AreaName": "Clean Room 4",
+      "ImageUrl": "/uploads/d9257417-3ce3-4f46-98ae-c311efab3e5c_4.png",
+      "Criticality": "MEDIA",
+      "LastCleaningDate": "2026-05-02T21:55:42.3414569Z",
+      "NextCleaningDate": "2026-07-31T21:55:42.3414569Z",
+      "DaysSinceLastCleaning": 100,
+      "DaysUntilNextCleaning": -10,
+      "Points": [
+        {
+          "Id": "1",
+          "Code": "1",
+          "Label": "Punto de Medici\u00F3n 1",
+          "XPercent": 10.73,
+          "YPercent": 64.12,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 192000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "2",
+          "Code": "2",
+          "Label": "Punto de Medici\u00F3n 2",
+          "XPercent": 11.83,
+          "YPercent": 40.82,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 3270000000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "3",
+          "Code": "3",
+          "Label": "Punto de Medici\u00F3n 3",
+          "XPercent": 17.51,
+          "YPercent": 8.89,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 274000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "4",
+          "Code": "4",
+          "Label": "Punto de Medici\u00F3n 4",
+          "XPercent": 57.13,
+          "YPercent": 9.16,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 58300,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "5",
+          "Code": "5",
+          "Label": "Punto de Medici\u00F3n 5",
+          "XPercent": 76.5,
+          "YPercent": 9.43,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 319000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "6",
+          "Code": "6",
+          "Label": "Punto de Medici\u00F3n 6",
+          "XPercent": 88.53,
+          "YPercent": 30.95,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 217000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "7",
+          "Code": "7",
+          "Label": "Punto de Medici\u00F3n 7",
+          "XPercent": 83.14,
+          "YPercent": 49.46,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 4910000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "8",
+          "Code": "8",
+          "Label": "Punto de Medici\u00F3n 8",
+          "XPercent": 26.57,
+          "YPercent": 50.69,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 672000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "9",
+          "Code": "9",
+          "Label": "Punto de Medici\u00F3n 9",
+          "XPercent": 41.43,
+          "YPercent": 57.06,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 1670000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "10",
+          "Code": "10",
+          "Label": "Punto de Medici\u00F3n 10",
+          "XPercent": 66.33,
+          "YPercent": 56.52,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 8290000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "11",
+          "Code": "11",
+          "Label": "Punto de Medici\u00F3n 11",
+          "XPercent": 63.08,
+          "YPercent": 70.09,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 4220000000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "12",
+          "Code": "12",
+          "Label": "Punto de Medici\u00F3n 12",
+          "XPercent": 26.43,
+          "YPercent": 84.34,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 3830000000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "13",
+          "Code": "13",
+          "Label": "Punto de Medici\u00F3n 13",
+          "XPercent": 90.95,
+          "YPercent": 78.24,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 2730000000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "14",
+          "Code": "14",
+          "Label": "Punto de Medici\u00F3n 14",
+          "XPercent": 44.34,
+          "YPercent": 94.96,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 652000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        },
+        {
+          "Id": "15",
+          "Code": "15",
+          "Label": "Punto de Medici\u00F3n 15",
+          "XPercent": 76.57,
+          "YPercent": 94.89,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 4160000000,
+          "LastMeasurementDate": "2026-06-09T17:55:06.745935Z"
+        }
+      ],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "Cuarto 5",
+      "AreaName": "Clean Room 5",
+      "ImageUrl": "/uploads/664465c8-c058-4b43-9a69-bc178cc564ef_5.png",
+      "Criticality": "ALTA",
+      "LastCleaningDate": "2026-05-02T21:56:52.5644668Z",
+      "NextCleaningDate": "2026-07-31T21:56:52.5644668Z",
+      "DaysSinceLastCleaning": 100,
+      "DaysUntilNextCleaning": -10,
+      "Points": [
+        {
+          "Id": "1",
+          "Code": "1",
+          "Label": "Punto de Medici\u00F3n 1",
+          "XPercent": 4.85,
+          "YPercent": 13.17,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 115000,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "2",
+          "Code": "2",
+          "Label": "Punto de Medici\u00F3n 2",
+          "XPercent": 10.73,
+          "YPercent": 48.68,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 48500,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "3",
+          "Code": "3",
+          "Label": "Punto de Medici\u00F3n 3",
+          "XPercent": 17.85,
+          "YPercent": 89.52,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 3660,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "4",
+          "Code": "4",
+          "Label": "Punto de Medici\u00F3n 4",
+          "XPercent": 29.89,
+          "YPercent": 77.04,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 23300,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "5",
+          "Code": "5",
+          "Label": "Punto de Medici\u00F3n 5",
+          "XPercent": 53.4,
+          "YPercent": 88.56,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 46800,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "6",
+          "Code": "6",
+          "Label": "Punto de Medici\u00F3n 6",
+          "XPercent": 84.38,
+          "YPercent": 77.15,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 189000000,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "7",
+          "Code": "7",
+          "Label": "Punto de Medici\u00F3n 7",
+          "XPercent": 94.27,
+          "YPercent": 59.77,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 547000000,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "8",
+          "Code": "8",
+          "Label": "Punto de Medici\u00F3n 8",
+          "XPercent": 69.79,
+          "YPercent": 58.17,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 4130,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "9",
+          "Code": "9",
+          "Label": "Punto de Medici\u00F3n 9",
+          "XPercent": 40.12,
+          "YPercent": 43.88,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 1790,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "10",
+          "Code": "10",
+          "Label": "Punto de Medici\u00F3n 10",
+          "XPercent": 74.77,
+          "YPercent": 37.81,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 393000,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "11",
+          "Code": "11",
+          "Label": "Punto de Medici\u00F3n 11",
+          "XPercent": 40.12,
+          "YPercent": 22.66,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 1000,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "12",
+          "Code": "12",
+          "Label": "Punto de Medici\u00F3n 12",
+          "XPercent": 73.46,
+          "YPercent": 20.21,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 441000,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "13",
+          "Code": "13",
+          "Label": "Punto de Medici\u00F3n 13",
+          "XPercent": 92.34,
+          "YPercent": 33.65,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 35600,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "14",
+          "Code": "14",
+          "Label": "Punto de Medici\u00F3n 14",
+          "XPercent": 87.7,
+          "YPercent": 14.35,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 15200,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        },
+        {
+          "Id": "15",
+          "Code": "15",
+          "Label": "Punto de Medici\u00F3n 15",
+          "XPercent": 98.28,
+          "YPercent": 85.79,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 253000,
+          "LastMeasurementDate": "2026-06-12T22:10:29.523619Z"
+        }
+      ],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "Cuarto 6",
+      "AreaName": "Clean Room 6",
+      "ImageUrl": "/uploads/89abad46-98c0-45ca-a1eb-999007fc0bc6_6.png",
+      "Criticality": "MEDIA",
+      "LastCleaningDate": "2026-05-02T21:57:08.7752142Z",
+      "NextCleaningDate": "2026-07-31T21:57:08.7752142Z",
+      "DaysSinceLastCleaning": 100,
+      "DaysUntilNextCleaning": -10,
+      "Points": [
+        {
+          "Id": "1",
+          "Code": "1",
+          "Label": "Punto de Medici\u00F3n 1",
+          "XPercent": 11.14,
+          "YPercent": 90.5,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 635000,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "2",
+          "Code": "2",
+          "Label": "Punto de Medici\u00F3n 2",
+          "XPercent": 15.78,
+          "YPercent": 74.11,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 635000,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "3",
+          "Code": "3",
+          "Label": "Punto de Medici\u00F3n 3",
+          "XPercent": 13.36,
+          "YPercent": 49.56,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 9140000000,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "4",
+          "Code": "4",
+          "Label": "Punto de Medici\u00F3n 4",
+          "XPercent": 17.64,
+          "YPercent": 26.39,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 634000000,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "5",
+          "Code": "5",
+          "Label": "Punto de Medici\u00F3n 5",
+          "XPercent": 22.28,
+          "YPercent": 6.6,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 1290000000,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "6",
+          "Code": "6",
+          "Label": "Punto de Medici\u00F3n 6",
+          "XPercent": 44.06,
+          "YPercent": 6.7,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 4250000000,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "7",
+          "Code": "7",
+          "Label": "Punto de Medici\u00F3n 7",
+          "XPercent": 84.8,
+          "YPercent": 7.25,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 1240000,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "8",
+          "Code": "8",
+          "Label": "Punto de Medici\u00F3n 8",
+          "XPercent": 84.11,
+          "YPercent": 31.06,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 435000,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "9",
+          "Code": "9",
+          "Label": "Punto de Medici\u00F3n 9",
+          "XPercent": 43.79,
+          "YPercent": 31.43,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 327000,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "10",
+          "Code": "10",
+          "Label": "Punto de Medici\u00F3n 10",
+          "XPercent": 84.45,
+          "YPercent": 46.72,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 62100000,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "11",
+          "Code": "11",
+          "Label": "Punto de Medici\u00F3n 11",
+          "XPercent": 43.99,
+          "YPercent": 47.18,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 12400,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "12",
+          "Code": "12",
+          "Label": "Punto de Medici\u00F3n 12",
+          "XPercent": 71.8,
+          "YPercent": 61.01,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 5160000000,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "13",
+          "Code": "13",
+          "Label": "Punto de Medici\u00F3n 13",
+          "XPercent": 84.45,
+          "YPercent": 93.07,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 42500,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "14",
+          "Code": "14",
+          "Label": "Punto de Medici\u00F3n 14",
+          "XPercent": 52.29,
+          "YPercent": 93.34,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 35100,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        },
+        {
+          "Id": "15",
+          "Code": "15",
+          "Label": "Punto de Medici\u00F3n 15",
+          "XPercent": 29.4,
+          "YPercent": 94.35,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 24800,
+          "LastMeasurementDate": "2026-06-10T13:48:46.010315Z"
+        }
+      ],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "Cuarto 2",
+      "AreaName": "Clean Room 2",
+      "ImageUrl": "/uploads/4b1fa962-3a75-45b3-bee2-f96002ecd826_2.png",
+      "Criticality": "ALTA",
+      "LastCleaningDate": "2026-05-02T21:59:10.9939465Z",
+      "NextCleaningDate": "2026-07-31T21:59:10.9939465Z",
+      "DaysSinceLastCleaning": 100,
+      "DaysUntilNextCleaning": -10,
+      "Points": [
+        {
+          "Id": "1",
+          "Code": "1",
+          "Label": "Punto de Medici\u00F3n 1",
+          "XPercent": 5.68,
+          "YPercent": 61.16,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 554000,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "2",
+          "Code": "2",
+          "Label": "Punto de Medici\u00F3n 2",
+          "XPercent": 25.18,
+          "YPercent": 55.24,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 2150000000,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "3",
+          "Code": "3",
+          "Label": "Punto de Medici\u00F3n 3",
+          "XPercent": 22,
+          "YPercent": 42.58,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 31500,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "4",
+          "Code": "4",
+          "Label": "Punto de Medici\u00F3n 4",
+          "XPercent": 36.11,
+          "YPercent": 33.73,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 1230000000,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "5",
+          "Code": "5",
+          "Label": "Punto de Medici\u00F3n 5",
+          "XPercent": 15.43,
+          "YPercent": 9.88,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 2420000000,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "6",
+          "Code": "6",
+          "Label": "Punto de Medici\u00F3n 6",
+          "XPercent": 49.8,
+          "YPercent": 12.81,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 55600,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "7",
+          "Code": "7",
+          "Label": "Punto de Medici\u00F3n 7",
+          "XPercent": 75.18,
+          "YPercent": 13.47,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 353000,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "8",
+          "Code": "8",
+          "Label": "Punto de Medici\u00F3n 8",
+          "XPercent": 83.28,
+          "YPercent": 32.12,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 125000,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "9",
+          "Code": "9",
+          "Label": "Punto de Medici\u00F3n 9",
+          "XPercent": 48.01,
+          "YPercent": 30.73,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 95900,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "10",
+          "Code": "10",
+          "Label": "Punto de Medici\u00F3n 10",
+          "XPercent": 47.38,
+          "YPercent": 57.94,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 3660000000,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "11",
+          "Code": "11",
+          "Label": "Punto de Medici\u00F3n 11",
+          "XPercent": 36.39,
+          "YPercent": 70.53,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 50100,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "12",
+          "Code": "12",
+          "Label": "Punto de Medici\u00F3n 12",
+          "XPercent": 36.18,
+          "YPercent": 88.96,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 104000,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "13",
+          "Code": "13",
+          "Label": "Punto de Medici\u00F3n 13",
+          "XPercent": 84.73,
+          "YPercent": 58.46,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 49700,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "14",
+          "Code": "14",
+          "Label": "Punto de Medici\u00F3n 14",
+          "XPercent": 84.38,
+          "YPercent": 77.55,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 101000,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        },
+        {
+          "Id": "15",
+          "Code": "15",
+          "Label": "Punto de Medici\u00F3n 15",
+          "XPercent": 69.38,
+          "YPercent": 90.79,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 55200,
+          "LastMeasurementDate": "2026-06-09T16:49:12.965663Z"
+        }
+      ],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    }
+  ],
+  "Requests": [
+    {
+      "Id": "REQ-20260810-001",
+      "AreaId": "SMT-01",
+      "AreaName": "L\u00EDnea 1 SMT (Montaje Superficial)",
+      "CoordXPercent": 58,
+      "CoordYPercent": 45,
+      "NearestPointId": "P-102",
+      "Reason": "Derramamiento de polvo aislante y lecturas de resistencia superiores a 1.0e8 Ohms",
+      "DetailedNotes": "Medici\u00F3n en punto P-02 arroj\u00F3 2.4e8 \u03A9. La capa de cera antiest\u00E1tica muestra desgaste cr\u00EDtico.",
+      "EvidenceFileName": "evidencia_medicion_esd.jpg",
+      "EvidenceFileType": "IMAGE",
+      "EvidenceUrl": "/uploads/smt_floor_plan.svg",
+      "RequestDate": "2026-08-10T12:12:59.9832238Z",
+      "RequestedBy": "Ing. Roberto G\u00F3mez (ESD Champion)",
+      "AreaLastCleaningDate": "2026-04-27T15:12:59.9833467Z",
+      "DaysSinceLastCleaning": 105,
+      "LastEsdResistanceOhms": 240000000,
+      "AreaCriticality": "ALTA",
+      "Meets3MonthRule": true,
+      "HasHighResistanceOverride": true,
+      "Priority": "ALTA",
+      "AuthorizationStatus": "AUTORIZADA",
+      "Status": "CANCELADA",
+      "StatusNotes": "Limpieza duplicada o no requerida",
+      "CompletedDate": null,
+      "CleanedBy": "Personal de Limpieza ESD",
+      "EvaluationSummary": "AUTORIZADA (PRIORIDAD ALTA): Resistencia medida excede 1.0E\u002B08 \u03A9 (ANSI/ESD S20.20-2021). Se autoriza aplicaci\u00F3n de cera antiest\u00E1tica."
+    },
+    {
+      "Id": "REQ-20260810-162210",
+      "AreaId": "CR1",
+      "AreaName": "Clean Room 1",
+      "CoordXPercent": 79.33,
+      "CoordYPercent": 38.45,
+      "NearestPointId": "GENERAL",
+      "Reason": "Acumulaci\u00F3n de Suciedad o Polvo Aislante",
+      "DetailedNotes": "Lineas en el piso",
+      "EvidenceFileName": "Image (37).jpg",
+      "EvidenceFileType": "IMAGE",
+      "EvidenceUrl": "/uploads/b0ed49bb-38d8-4e78-9aa5-25b206f918f7_Image (37).jpg",
+      "RequestDate": "2026-08-10T16:22:10.1953615Z",
+      "RequestedBy": "Aaron",
+      "AreaLastCleaningDate": "2026-05-02T15:13:21.0950698Z",
+      "DaysSinceLastCleaning": 100,
+      "LastEsdResistanceOhms": 45000000,
+      "AreaCriticality": "ALTA",
+      "Meets3MonthRule": true,
+      "HasHighResistanceOverride": false,
+      "Priority": "ALTA",
+      "AuthorizationStatus": "AUTORIZADA",
+      "Status": "AUTORIZADA",
+      "StatusNotes": "",
+      "CompletedDate": null,
+      "CleanedBy": "",
+      "EvaluationSummary": "AUTORIZADA (PRIORIDAD ALTA): Ha cumplido el ciclo de 3 meses (100 d\u00EDas transcurridos) en una zona de ALTA criticidad ESD (L\u00EDnea SMT/Cuarto Limpio)."
+    }
+  ]
+}

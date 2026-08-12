@@ -1,0 +1,214 @@
+{
+  "Maps": [
+    {
+      "AreaId": "SMT-01",
+      "AreaName": "L\u00EDnea 1 SMT (Montaje Superficial)",
+      "ImageUrl": "/uploads/smt_floor_plan.svg",
+      "Criticality": "ALTA",
+      "LastCleaningDate": "2026-04-27T15:12:59.9628947Z",
+      "Points": [
+        {
+          "Id": "P-101",
+          "Code": "P-01",
+          "Label": "Entrada SMT - Alimentador",
+          "XPercent": 25.5,
+          "YPercent": 30,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 45000000,
+          "LastMeasurementDate": "2026-08-05T15:12:59.9637894Z"
+        },
+        {
+          "Id": "P-102",
+          "Code": "P-02",
+          "Label": "Horno Reflujo SMT",
+          "XPercent": 58,
+          "YPercent": 45,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 240000000,
+          "LastMeasurementDate": "2026-08-08T15:12:59.963908Z"
+        },
+        {
+          "Id": "P-103",
+          "Code": "P-03",
+          "Label": "Estaci\u00F3n AOI / Salida",
+          "XPercent": 80,
+          "YPercent": 70,
+          "ZoneType": "SMT",
+          "LastResistanceOhms": 38000000,
+          "LastMeasurementDate": "2026-07-31T15:12:59.9639087Z"
+        }
+      ],
+      "FloorType": "Loseta Conductiva ESD \u002B Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "ASSY-01",
+      "AreaName": "\u00C1rea de Ensamble y Prueba de Tarjetas",
+      "ImageUrl": "/uploads/assembly_floor_plan.svg",
+      "Criticality": "MEDIA",
+      "LastCleaningDate": "2026-06-26T15:12:59.9639723Z",
+      "Points": [
+        {
+          "Id": "P-201",
+          "Code": "P-01",
+          "Label": "Estaci\u00F3n de Soldadura 1",
+          "XPercent": 30,
+          "YPercent": 40,
+          "ZoneType": "Assembly",
+          "LastResistanceOhms": 52000000,
+          "LastMeasurementDate": "2026-07-29T15:12:59.9639737Z"
+        },
+        {
+          "Id": "P-202",
+          "Code": "P-02",
+          "Label": "Mesa de Prueba Funcional",
+          "XPercent": 70,
+          "YPercent": 60,
+          "ZoneType": "Testing",
+          "LastResistanceOhms": 180000000,
+          "LastMeasurementDate": "2026-08-09T15:12:59.9639742Z"
+        }
+      ],
+      "FloorType": "Loseta Conductiva ESD \u002B Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "CR1",
+      "AreaName": "Clean Room 1",
+      "ImageUrl": "/uploads/8abb9502-0bf7-4b66-bb55-e68abd63a5a3_1.png",
+      "Criticality": "ALTA",
+      "LastCleaningDate": "2026-05-02T15:13:21.0950698Z",
+      "Points": [],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "CR2",
+      "AreaName": "Clean Room 2",
+      "ImageUrl": "/uploads/e5d56902-a70a-4e52-b8a9-ccf2cb89383a_2.png",
+      "Criticality": "ALTA",
+      "LastCleaningDate": "2026-05-02T20:57:50.6710962Z",
+      "Points": [],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "Cuarto 1",
+      "AreaName": "Clean Room 1",
+      "ImageUrl": "/uploads/a225e05c-e4ff-4a94-a17e-d6ae699e834e_1.png",
+      "Criticality": "ALTA",
+      "LastCleaningDate": "2026-05-02T21:38:30.405531Z",
+      "Points": [],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "Cuarto 3",
+      "AreaName": "Clean Room 3",
+      "ImageUrl": "/uploads/00e6a74a-acea-4d68-b0fb-641cf8aa69a7_3.png",
+      "Criticality": "MEDIA",
+      "LastCleaningDate": "2026-05-02T21:55:22.3068028Z",
+      "Points": [],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "Cuarto 4",
+      "AreaName": "Clean Room 4",
+      "ImageUrl": "/uploads/d9257417-3ce3-4f46-98ae-c311efab3e5c_4.png",
+      "Criticality": "MEDIA",
+      "LastCleaningDate": "2026-05-02T21:55:42.3414569Z",
+      "Points": [],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "Cuarto 5",
+      "AreaName": "Clean Room 5",
+      "ImageUrl": "/uploads/664465c8-c058-4b43-9a69-bc178cc564ef_5.png",
+      "Criticality": "ALTA",
+      "LastCleaningDate": "2026-05-02T21:56:52.5644668Z",
+      "Points": [],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "Cuarto 6",
+      "AreaName": "Clean Room 6",
+      "ImageUrl": "/uploads/89abad46-98c0-45ca-a1eb-999007fc0bc6_6.png",
+      "Criticality": "MEDIA",
+      "LastCleaningDate": "2026-05-02T21:57:08.7752142Z",
+      "Points": [],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    },
+    {
+      "AreaId": "Cuarto 2",
+      "AreaName": "Clean Room 2",
+      "ImageUrl": "/uploads/4b1fa962-3a75-45b3-bee2-f96002ecd826_2.png",
+      "Criticality": "ALTA",
+      "LastCleaningDate": "2026-05-02T21:59:10.9939465Z",
+      "Points": [],
+      "FloorType": "Loseta Conductiva con Cera Antiest\u00E1tica",
+      "StandardCompliance": "ANSI/ESD S20.20-2021"
+    }
+  ],
+  "Requests": [
+    {
+      "Id": "REQ-20260810-001",
+      "AreaId": "SMT-01",
+      "AreaName": "L\u00EDnea 1 SMT (Montaje Superficial)",
+      "CoordXPercent": 58,
+      "CoordYPercent": 45,
+      "NearestPointId": "P-102",
+      "Reason": "Derramamiento de polvo aislante y lecturas de resistencia superiores a 1.0e8 Ohms",
+      "DetailedNotes": "Medici\u00F3n en punto P-02 arroj\u00F3 2.4e8 \u03A9. La capa de cera antiest\u00E1tica muestra desgaste cr\u00EDtico.",
+      "EvidenceFileName": "evidencia_medicion_esd.jpg",
+      "EvidenceFileType": "IMAGE",
+      "EvidenceUrl": "/uploads/smt_floor_plan.svg",
+      "RequestDate": "2026-08-10T12:12:59.9832238Z",
+      "RequestedBy": "Ing. Roberto G\u00F3mez (ESD Champion)",
+      "AreaLastCleaningDate": "2026-04-27T15:12:59.9833467Z",
+      "DaysSinceLastCleaning": 105,
+      "LastEsdResistanceOhms": 240000000,
+      "AreaCriticality": "ALTA",
+      "Meets3MonthRule": true,
+      "HasHighResistanceOverride": true,
+      "Priority": "ALTA",
+      "AuthorizationStatus": "AUTORIZADA",
+      "Status": "AUTORIZADA",
+      "StatusNotes": "",
+      "CompletedDate": null,
+      "CleanedBy": "",
+      "EvaluationSummary": "AUTORIZADA (PRIORIDAD ALTA): Resistencia medida excede 1.0E\u002B08 \u03A9 (ANSI/ESD S20.20-2021). Se autoriza aplicaci\u00F3n de cera antiest\u00E1tica."
+    },
+    {
+      "Id": "REQ-20260810-162210",
+      "AreaId": "CR1",
+      "AreaName": "Clean Room 1",
+      "CoordXPercent": 79.33,
+      "CoordYPercent": 38.45,
+      "NearestPointId": "GENERAL",
+      "Reason": "Acumulaci\u00F3n de Suciedad o Polvo Aislante",
+      "DetailedNotes": "Lineas en el piso",
+      "EvidenceFileName": "Image (37).jpg",
+      "EvidenceFileType": "IMAGE",
+      "EvidenceUrl": "/uploads/b0ed49bb-38d8-4e78-9aa5-25b206f918f7_Image (37).jpg",
+      "RequestDate": "2026-08-10T16:22:10.1953615Z",
+      "RequestedBy": "Aaron",
+      "AreaLastCleaningDate": "2026-05-02T15:13:21.0950698Z",
+      "DaysSinceLastCleaning": 100,
+      "LastEsdResistanceOhms": 45000000,
+      "AreaCriticality": "ALTA",
+      "Meets3MonthRule": true,
+      "HasHighResistanceOverride": false,
+      "Priority": "ALTA",
+      "AuthorizationStatus": "AUTORIZADA",
+      "Status": "AUTORIZADA",
+      "StatusNotes": "",
+      "CompletedDate": null,
+      "CleanedBy": "",
+      "EvaluationSummary": "AUTORIZADA (PRIORIDAD ALTA): Ha cumplido el ciclo de 3 meses (100 d\u00EDas transcurridos) en una zona de ALTA criticidad ESD (L\u00EDnea SMT/Cuarto Limpio)."
+    }
+  ]
+}

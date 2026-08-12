@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Solicitudes de Limpieza ESD | ANSI/ESD S20.20-2021</title>
+    <meta name="description" content="Sistema de solicitudes para limpieza de piso con loseta conductiva y cera antiestática en planta electrónica.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+        <div class="header-brand">
+            <div class="logo-icon">
+                <i class="fa-solid fa-bolt-lightning"></i>
+            </div>
+            <div class="brand-text">
+                <h1>ESD FLOOR MANAGER</h1>
+                <span>ANSI/ESD S20.20-2021 • Loseta Conductiva &amp; Cera Antiestática</span>
+            </div>
+        </div>
+        
+        <nav class="nav-tabs">
+            <button class="nav-btn active" data-tab="solicitud">
+                <i class="fa-solid fa-map-location-dot"></i> Nueva Solicitud
+            </button>
+            <button class="nav-btn" data-tab="historial">
+                <i class="fa-solid fa-list-check"></i> Historial y Solicitudes <span class="badge-count" id="request-badge">1</span>
+            </button>
+            <button class="nav-btn" data-tab="ajustes">
+                <i class="fa-solid fa-sliders"></i> Ajustes y Mapeo
+            </button>
+        </nav>
+
+        <div class="status-indicator">
+            <span class="pulse-dot"></span> Supabase Conectado
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="app-container">
+
+        <!-- TAB 1: NUEVA SOLICITUD DE LIMPIEZA -->
+        <section id="tab-solicitud" class="tab-content active">
+            <div class="grid-layout">
+                
+                <!-- Left Panel: Interactive Floor Plan -->
+                <div class="panel map-panel glass-card">
+                    <div class="panel-header">
+                        <h2><span class="step-header-badge step-active" id="badge-step1">Paso 1</span><i class="fa-solid fa-map-pin"></i> Ubicación en Planta</h2>
+                        <div class="area-selector-container">
+                            <label for="area-select">Área de Planta:</label>
+                            <select id="area-select" class="custom-select">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="area-info-banner" id="area-info-banner">
+                        <div class="info-pill"><i class="fa-solid fa-microchip"></i> Criticidad: <strong id="lbl-criticality">ALTA</strong></div>
+                        <div class="info-pill"><i class="fa-solid fa-calendar-day"></i> Última Limpieza: <strong id="lbl-last-cleaning">Hace 105 días</strong></div>
+                        <div class="info-pill"><i class="fa-solid fa-shield-halved"></i> Norma: <strong>ANSI/ESD S20.20-2021</strong></div>
+                    </div>
+
+                    <div class="map-viewport" id="map-viewport" style="position: relative;">
+                        <!-- Step 2 Lock Overlay -->
+                        <div class="step-lock-overlay" id="step2-lock-overlay">
+                            <div class="step-lock-card">
+                                <i class="fa-solid fa-lock"></i>
+                                <h4>Paso 2: Selección de Punto Bloqueado</h4>
+                                <p><strong>🔒 Paso 1 Requerido:</strong> Selecciona un Área de Planta en el desplegable superior para cargar el mapa interactivo.</p>
+                            </div>
+                        </div>
+
+                        <div class="map-wrapper" id="map-wrapper">
+                            <img id="floor-map-img" src="" alt="Plano de Piso" />
+                            <!-- Pins for measurement points and target reticle -->
+                            <div id="map-overlay"></div>
+                        </div>
+                        <div class="map-instructions">
+                            <i class="fa-solid fa-crosshairs"></i> <strong>Paso 2:</strong> Haz clic en cualquier punto del mapa para fijar la ubicación exacta de la limpieza.
+                        </div>
+                    </div>
+
+                    <div class="map-legend">
+                        <span class="legend-item"><span class="dot green"></span> Resistencia Conforme (&le; 1e8 &Omega;)</span>
+                        <span class="legend-item"><span class="dot red"></span> Resistencia Alta (&gt; 1e8 &Omega; - Cera Degradada)</span>
+                        <span class="legend-item"><span class="dot reticle"></span> Ubicación Seleccionada</span>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Request Details & Evidence -->
+                <div class="panel form-panel glass-card" style="position: relative;">
+                    <!-- Step 3 Lock Overlay -->
+                    <div class="step-lock-overlay" id="step3-lock-overlay">
+                        <div class="step-lock-card">
+                            <i class="fa-solid fa-lock"></i>
+                            <h4>Paso 3: Formulario Bloqueado</h4>
+                            <p><strong>🔒 Paso 2 Requerido:</strong> Haz clic sobre una ubicación en el mapa de piso (Paso 2) para fijar las coordenadas a limpiar y habilitar el formulario.</p>
+                        </div>
+                    </div>
+
+                    <div class="panel-header">
+                        <h2><span class="step-header-badge step-locked" id="badge-step3">Paso 3</span><i class="fa-solid fa-file-pen"></i> Datos de Solicitud</h2>
+                    </div>
+
+                    <form id="form-cleaning-request" class="request-form">
+                        
+                        <!-- Selected Coordinates Badge -->
+                        <div class="form-group">
+                            <label>Coordenadas Seleccionadas:</label>
+                            <div class="coord-display" id="coord-display">
+                                <i class="fa-solid fa-location-crosshairs"></i> <span id="coord-text">Ninguna ubicación elegida (Haz clic en el mapa)</span>
+                            </div>
+                        </div>
+
+                        <!-- Reason Dropdown & Description -->
+                        <div class="form-group">
+                            <label for="req-reason">Motivo de Limpieza: <span class="req">*</span></label>
+                            <select id="req-reason" class="custom-select" required>
+                                <option value="">-- Seleccionar Motivo --</option>
+                                <option value="Resistencia Alta de ESD (> 1.0e8 Ω)">Resistencia ESD Alta (> 1.0e8 Ω - Degradación Cera)</option>
+                                <option value="Acumulación de Suciedad o Polvo Aislante">Acumulación de Suciedad o Polvo Aislante</option>
+                                <option value="Derrame de Químicos / Residuos de Flux">Derrame de Químicos / Residuos de Flux</option>
+                                <option value="Mantenimiento Programado (> 3 meses)">Mantenimiento Programado (> 3 meses)</option>
+                                <option value="Inspección de Calidad / Auditoría ESD">Inspección de Calidad / Auditoría ESD</option>
+                                <option value="Otro Motivo">Otro Motivo Espedífico</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="req-notes">Detalles y Observaciones:</label>
+                            <textarea id="req-notes" rows="3" class="custom-textarea" placeholder="Describa condiciones particulares del piso, grietas en cera o resultados de prueba de resistencia..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="req-user">Solicitante / Usuario:</label>
+                            <input type="text" id="req-user" class="custom-input" value="Ing. Operaciones ESD" />
+                        </div>
+
+                        <!-- Evidence Upload Section -->
+                        <div class="form-group evidence-section">
+                            <label>Evidencia Obligatoria (Imagen, PDF o Foto WebCam): <span class="req">*</span></label>
+                            
+                            <div class="evidence-options">
+                                <label class="btn-file-upload">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Cargar Imagen / PDF
+                                    <input type="file" id="evidence-file-input" accept="image/*,application/pdf" style="display:none;" />
+                                </label>
+
+                                <button type="button" id="btn-open-camera" class="btn-secondary">
+                                    <i class="fa-solid fa-camera"></i> Tomar Fotografía (Cámara)
+                                </button>
+                            </div>
+
+                            <!-- Preview Box -->
+                            <div id="evidence-preview-container" class="evidence-preview-box empty">
+                                <div class="empty-state">
+                                    <i class="fa-solid fa-file-image"></i>
+                                    <span>Sin evidencia cargada. Debe subir un archivo PDF/imagen o capturar una foto.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Priority Preview Box -->
+                        <div id="priority-preview-box" class="priority-preview-box">
+                            <div class="preview-title"><i class="fa-solid fa-calculator"></i> Evaluación Prevista ANSI/ESD S20.20-2021</div>
+                            <div id="priority-preview-content">Haz clic en el mapa para evaluar periodicidad y resistencia ESD...</div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" id="btn-submit-request" class="btn-primary btn-submit">
+                            <i class="fa-solid fa-paper-plane"></i> Evaluar y Enviar Solicitud
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TAB 2: HISTORIAL Y LISTA DE SOLICITUDES -->
+        <section id="tab-historial" class="tab-content">
+            <div class="panel glass-card">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-clock-rotate-left"></i> Registro de Solicitudes de Limpieza</h2>
+                    <div class="table-actions">
+                        <button id="btn-refresh-requests" class="btn-secondary"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="custom-table" id="requests-table">
+                        <thead>
+                            <tr>
+                                <th>ID Solicitud</th>
+                                <th>Fecha</th>
+                                <th>Área</th>
+                                <th>Motivo</th>
+                                <th>Días s/Limpieza</th>
+                                <th>Resistencia ESD</th>
+                                <th>Prioridad</th>
+                                <th>Estado</th>
+                                <th>Evidencia</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requests-tbody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: AJUSTES Y MAPEO (CONFIGURACIÓN) -->
+        <section id="tab-ajustes" class="tab-content">
+            <div class="grid-layout">
+                
+                <!-- Map & Coordinates Editor -->
+                <div class="panel glass-card full-width">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-gears"></i> Configuración de Mapas por Área y Puntos de Mapeo ESD</h2>
+                    </div>
+
+                    <div class="settings-grid">
+                        
+                        <!-- Area Map Uploader -->
+                        <div class="settings-card">
+                            <h3><i class="fa-solid fa-image"></i> 1. Cargar Mapa de Piso (1 Imagen por Área)</h3>
+                            <form id="form-upload-map" class="settings-form">
+                                <div class="form-group">
+                                    <label>Código de Área (ID):</label>
+                                    <input type="text" id="cfg-area-id" class="custom-input" placeholder="ej. SMT-01, CLEAN-02" required />
+                                </div>
+                                <div class="form-group">
+                                    <label>Nombre del Área:</label>
+                                    <input type="text" id="cfg-area-name" class="custom-input" placeholder="ej. Línea 2 SMT Cuarto Limpio" required />
+                                </div>
+                                <div class="form-group">
+                                    <label>Criticidad ESD:</label>
+                                    <select id="cfg-area-criticality" class="custom-select">
+                                        <option value="ALTA">ALTA (Componentes Clase 0 / 1A)</option>
+                                        <option value="MEDIA">MEDIA (Ensamble General)</option>
+                                        <option value="BAJA">BAJA (Almacén / Empaque)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Seleccionar Imagen del Plano:</label>
+                                    <input type="file" id="cfg-map-file" accept="image/*" class="custom-input" required />
+                                </div>
+                                <button type="submit" class="btn-primary"><i class="fa-solid fa-upload"></i> Subir Plano de Área</button>
+                            </form>
+                        </div>
+
+                        <!-- Supabase Connection Config -->
+                        <div class="settings-card">
+                            <h3><i class="fa-solid fa-database"></i> 2. Configuración de Base de Datos Supabase</h3>
+                            <form id="form-supabase-config" class="settings-form">
+                                <div class="form-group">
+                                    <label>Supabase URL API:</label>
+                                    <input type="text" id="cfg-sp-url" class="custom-input" placeholder="https://your-project.supabase.co" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Supabase Anon Key:</label>
+                                    <input type="password" id="cfg-sp-key" class="custom-input" placeholder="eyJhbGciOi..." />
+                                </div>
+                                <div class="form-group">
+                                    <label>Tabla de Mediciones:</label>
+                                    <input type="text" id="cfg-sp-table" class="custom-input" value="esd_measurements" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Intervalo Mínimo de Limpieza (Días):</label>
+                                    <input type="number" id="cfg-min-days" class="custom-input" value="90" min="30" max="365" />
+                                    <small class="form-help">Regla norma: No menor a 3 meses (90 días).</small>
+                                </div>
+                                <button type="submit" class="btn-secondary"><i class="fa-solid fa-floppy-disk"></i> Guardar Ajustes Supabase</button>
+                                <button type="button" id="btn-debug-supabase" class="btn-secondary" style="margin-top: 0.6rem; border-color: #00f2fe; color: #00f2fe;"><i class="fa-solid fa-bug"></i> Diagnosticar Conexión (validacion_piso)</button>
+                            </form>
+                        </div>
+
+                    </div>
+
+                    <!-- Coordinates Editor Canvas -->
+                    <div class="settings-card margin-top">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                            <h3><i class="fa-solid fa-location-dot"></i> 3. Editor Visual de Coordenadas de Puntos ESD</h3>
+                            <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                <label for="editor-area-select" style="font-weight: 600; font-size: 0.9rem; color: var(--primary);">Seleccionar Área a Mapear:</label>
+                                <select id="editor-area-select" class="custom-select" style="min-width: 260px;">
+                                    <!-- Populated dynamically via JS -->
+                                </select>
+                            </div>
+                        </div>
+                        <p class="subtitle" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.88rem;">Seleccione un área en el desplegable y haga clic directamente sobre el plano para agregar o modificar puntos de medición de resistencia electrostática.</p>
+                        
+                        <div class="editor-viewport">
+                            <div class="map-wrapper" id="editor-map-wrapper">
+                                <img id="editor-map-img" src="" alt="Mapa Editor" />
+                                <div id="editor-map-overlay"></div>
+                            </div>
+                        </div>
+
+                        <div class="points-table-container">
+                            <h4>Puntos Configurados para el Área Seleccionada:</h4>
+                            <table class="custom-table" id="points-table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Etiqueta / Descripción</th>
+                                        <th>Coord X (%)</th>
+                                        <th>Coord Y (%)</th>
+                                        <th>Última Resistencia (&Omega;)</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="points-tbody">
+                                    <!-- Populated JS -->
+                                </tbody>
+                            </table>
+                            <button type="button" id="btn-save-points" class="btn-primary margin-top"><i class="fa-solid fa-save"></i> Guardar Coordenadas Mapeadas</button>
+                        </div>
+                    </div>
+
+                    <!-- Registered Areas Management Card -->
+                    <div class="settings-card margin-top">
+                        <h3><i class="fa-solid fa-list-check"></i> 4. Gestión de Áreas y Cuartos Registrados</h3>
+                        <p class="subtitle">Administre, modifique o elimine las áreas/cuartos de producción registrados en el sistema.</p>
+                        
+                        <div class="table-responsive margin-top">
+                            <table class="custom-table" id="areas-management-table">
+                                <thead>
+                                    <tr>
+                                        <th>Código (cuarto)</th>
+                                        <th>Nombre del Área</th>
+                                        <th>Criticidad</th>
+                                        <th>Puntos Mapeados</th>
+                                        <th>Vista Previa</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="areas-management-tbody">
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal WebCam Capture -->
+    <div id="modal-webcam" class="modal-overlay">
+        <div class="modal-box glass-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-camera"></i> Capturar Fotografía de Evidencia</h3>
+                <button type="button" id="btn-close-webcam" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="webcam-viewport">
+                    <video id="webcam-video" autoplay playsinline></video>
+                    <canvas id="webcam-canvas" style="display:none;"></canvas>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-capture-photo" class="btn-primary"><i class="fa-solid fa-camera-retro"></i> Tomar Foto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal View Request Detail -->
+    <div id="modal-detail" class="modal-overlay">
+        <div class="modal-box glass-card modal-lg">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-contract"></i> Detalle de Solicitud de Limpieza</h3>
+                <button type="button" id="btn-close-detail" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" id="detail-modal-body">
+                <!-- Dynamic Content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Debug Supabase -->
+    <div id="modal-debug-supabase" class="modal-overlay">
+        <div class="modal-box glass-card modal-lg">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-bug"></i> Diagnóstico y Lectura de Supabase (validacion_piso)</h3>
+                <button type="button" id="btn-close-debug-modal" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" id="debug-modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <!-- Dynamic Content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Area -->
+    <div id="modal-edit-area" class="modal-overlay">
+        <div class="modal-box glass-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-pen-to-square"></i> Modificar Área / Cuarto</h3>
+                <button type="button" id="btn-close-edit-area" class="btn-icon"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-edit-area" class="settings-form">
+                    <input type="hidden" id="edit-area-id-hidden" />
+                    <div class="form-group">
+                        <label>Código de Área (ID):</label>
+                        <input type="text" id="edit-area-id" class="custom-input" readonly style="opacity:0.7;" />
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre del Área:</label>
+                        <input type="text" id="edit-area-name" class="custom-input" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Criticidad ESD:</label>
+                        <select id="edit-area-criticality" class="custom-select">
+                            <option value="ALTA">ALTA (Componentes Clase 0 / 1A)</option>
+                            <option value="MEDIA">MEDIA (Ensamble General)</option>
+                            <option value="BAJA">BAJA (Almacén / Empaque)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Cambiar Imagen de Plano (Opcional):</label>
+                        <input type="file" id="edit-area-file" accept="image/*" class="custom-input" />
+                    </div>
+                    <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios del Área</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>Sistema de Solicitudes de Limpieza Cera Antiestática &copy; 2026. Cumplimiento con <strong>ANSI/ESD S20.20-2021</strong>.</p>
+    </footer>
+
+    <!-- App Script -->
+    <script src="js/app.js"></script>
+</body>
+</html>
