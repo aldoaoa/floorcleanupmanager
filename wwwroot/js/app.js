@@ -36,9 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const requestsTbody = document.getElementById('requests-tbody');
     const requestBadge = document.getElementById('request-badge');
 
-    // Initialize Application
-    initApp();
-
     async function initApp() {
         setupNavigation();
         setupEventListeners();
@@ -1466,4 +1463,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Initialize Application after all variables are declared
+    initApp();
 });
