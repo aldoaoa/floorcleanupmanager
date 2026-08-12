@@ -29,28 +29,6 @@ public class CleaningController : ControllerBase
     public async Task<IActionResult> GetMaps()
     {
         var maps = await _storageService.GetMapsAsync();
-        foreach (var map in maps)
-        {
-            var measurements = await _supabaseService.GetMeasurementsForAreaAsync(map.AreaId);
-            if (measurements != null && measurements.Any() && map.Points != null)
-            {
-                foreach (var point in map.Points)
-                {
-                    var matchedM = FindMatchingMeasurement(point, measurements);
-                    if (matchedM != null)
-                    {
-                        point.LastResistanceOhms = matchedM.ResistanceOhms;
-                        point.LastMeasurementDate = matchedM.MeasurementDate;
-                    }
-                }
-            }
-
-            var lastCleaning = await _supabaseService.GetLastCleaningForAreaAsync(map.AreaId);
-            if (lastCleaning != null)
-            {
-                map.LastCleaningDate = lastCleaning.FechaLimpieza;
-            }
-        }
         return Ok(maps);
     }
 
