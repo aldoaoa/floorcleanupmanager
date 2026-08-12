@@ -519,50 +519,6 @@ public class SupabaseService
             Console.WriteLine($"[Supabase solicitudes_limpieza Fetch Error] {ex.Message}");
         }
 
-        // Derive High-Resistance Requests directly from Supabase validacion_piso measurements if not already present
-        try
-        {
-            var measurements = await GetMeasurementsForAreaAsync("");
-            var highResistancePts = measurements.Where(m => m.ResistanceOhms > 1e8).ToList();
-
-            foreach (var hr in highResistancePts)
-            {
-                if (!result.Any(r => r.AreaId.Equals(hr.AreaId, StringComparison.OrdinalIgnoreCase) && Math.Abs(r.CoordXPercent - hr.CoordX) < 1.0))
-                {
-                    result.Add(new CleaningRequest
-                    {
-                        Id = $"REQ-SB-{hr.Id}",
-                        AreaId = hr.AreaId,
-                        AreaName = hr.AreaId,
-                        CoordXPercent = hr.CoordX,
-                        CoordYPercent = hr.CoordY,
-                        NearestPointId = hr.PointId,
-                        Reason = "Resistencia eléctrica alta (superior a 1.0e8 ohms)",
-                        DetailedNotes = $"Medición en punto {hr.PointName} arrojó {hr.ResistanceOhms:E1} Ω. La capa de cera antiestática muestra desgaste crítico.",
-                        EvidenceFileName = "evidencia_medicion_esd.jpg",
-                        EvidenceFileType = "IMAGE",
-                        EvidenceUrl = "/uploads/smt_floor_plan.svg",
-                        RequestDate = hr.MeasurementDate,
-                        RequestedBy = hr.Inspector,
-                        AreaLastCleaningDate = hr.MeasurementDate.AddDays(-100),
-                        DaysSinceLastCleaning = 100,
-                        LastEsdResistanceOhms = hr.ResistanceOhms,
-                        AreaCriticality = "ALTA",
-                        Meets3MonthRule = true,
-                        HasHighResistanceOverride = true,
-                        Priority = "ALTA",
-                        AuthorizationStatus = "AUTORIZADA",
-                        Status = "AUTORIZADA",
-                        EvaluationSummary = $"AUTORIZADA (PRIORIDAD ALTA): Resistencia medida ({hr.ResistanceOhms:E1} Ω) excede 1.0E+08 Ω (ANSI/ESD S20.20-2021). Se autoriza aplicación de cera antiestática."
-                    });
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Supabase Derive Requests Error] {ex.Message}");
-        }
-
         return result;
     }
 
@@ -670,48 +626,6 @@ public class SupabaseService
             Console.WriteLine($"[Supabase puntos_medicion_esd Fetch Error] {ex.Message}");
         }
 
-        // 3. Populate / Augment points from validacion_piso if map has no points
-        try
-        {
-            var measurements = await GetMeasurementsForAreaAsync("");
-            if (measurements != null && measurements.Any())
-            {
-                var groupedByArea = measurements.GroupBy(m => string.IsNullOrEmpty(m.AreaId) ? "Cuarto 1" : m.AreaId);
-                foreach (var group in groupedByArea)
-                {
-                    string areaId = group.Key;
-                    if (!mapDict.TryGetValue(areaId, out var map))
-                    {
-                        map = new FloorMapConfig
-                        {
-                            AreaId = areaId,
-                            AreaName = GetAreaDisplayName(areaId),
-                            ImageUrl = GetImageUrlForArea(areaId)
-                        };
-                        mapDict[areaId] = map;
-                    }
-
-                    if (map.Points == null || !map.Points.Any())
-                    {
-                        map.Points = group.Select(m => new MapPoint
-                        {
-                            Id = m.PointId,
-                            Code = m.PointId,
-                            Label = string.IsNullOrEmpty(m.PointName) ? $"Punto {m.PointId}" : m.PointName,
-                            XPercent = m.CoordX,
-                            YPercent = m.CoordY,
-                            ZoneType = "SMT",
-                            LastResistanceOhms = m.ResistanceOhms,
-                            LastMeasurementDate = m.MeasurementDate
-                        }).ToList();
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Supabase validacion_piso Augment Error] {ex.Message}");
-        }
 
         // Set criticality from points
         foreach (var m in mapDict.Values)
