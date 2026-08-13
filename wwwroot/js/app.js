@@ -58,6 +58,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.classList.add('active');
                 document.getElementById(`tab-${targetTab}`).classList.add('active');
 
+                if (targetTab === 'historial') {
+                    loadRequests();
+                    loadCleaningHistory();
+                }
+
                 if (targetTab === 'ajustes') {
                     renderEditorMap();
                     renderAreasManagementTable();
@@ -75,6 +80,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupEventListeners() {
+        // Subtab Handlers for Historial & Solicitudes
+        const btnSubtabRequests = document.getElementById('btn-subtab-requests');
+        const btnSubtabHistory = document.getElementById('btn-subtab-history');
+        const viewSubtabRequests = document.getElementById('subtab-requests-view');
+        const viewSubtabHistory = document.getElementById('subtab-history-view');
+
+        if (btnSubtabRequests && btnSubtabHistory) {
+            btnSubtabRequests.addEventListener('click', () => {
+                btnSubtabRequests.className = 'btn-primary btn-sm active';
+                btnSubtabHistory.className = 'btn-secondary btn-sm';
+                if (viewSubtabRequests) viewSubtabRequests.classList.remove('hidden');
+                if (viewSubtabHistory) viewSubtabHistory.classList.add('hidden');
+            });
+
+            btnSubtabHistory.addEventListener('click', () => {
+                btnSubtabHistory.className = 'btn-primary btn-sm active';
+                btnSubtabRequests.className = 'btn-secondary btn-sm';
+                if (viewSubtabHistory) viewSubtabHistory.classList.remove('hidden');
+                if (viewSubtabRequests) viewSubtabRequests.classList.add('hidden');
+                loadCleaningHistory();
+            });
+        }
+
         areaSelect.addEventListener('change', (e) => {
             selectArea(e.target.value);
         });
@@ -99,7 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        document.getElementById('btn-refresh-requests').addEventListener('click', loadRequests);
+        document.getElementById('btn-refresh-requests').addEventListener('click', () => {
+            loadRequests();
+            loadCleaningHistory();
+        });
         document.getElementById('btn-close-detail').addEventListener('click', () => {
             document.getElementById('modal-detail').classList.remove('active');
         });
@@ -536,6 +567,56 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (err) {
             console.error('Error fetching requests:', err);
         }
+    }
+
+    // Load Cleaning History (Realizadas)
+    let currentHistory = [];
+
+    async function loadCleaningHistory() {
+        try {
+            const res = await fetch('/api/cleaning/history');
+            if (res.ok) {
+                currentHistory = await res.json();
+                renderHistoryTable();
+            }
+        } catch (err) {
+            console.error('Error fetching cleaning history:', err);
+        }
+    }
+
+    function renderHistoryTable() {
+        const historyTbody = document.getElementById('history-tbody');
+        if (!historyTbody) return;
+        historyTbody.innerHTML = '';
+
+        if (!currentHistory || currentHistory.length === 0) {
+            historyTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-dim);">No hay registros de limpiezas realizadas.</td></tr>`;
+            return;
+        }
+
+        currentHistory.forEach(item => {
+            const tr = document.createElement('tr');
+            const dateCleanStr = item.cleanedDate ? new Date(item.cleanedDate).toLocaleString('es-MX') : 'Reciente';
+            const dateNextStr = item.nextCleaningDate ? new Date(item.nextCleaningDate).toLocaleDateString('es-MX') : 'Por definir';
+
+            let reasonBadge = `<span class="badge badge-autorizada"><i class="fa-solid fa-broom"></i> ${item.reason}</span>`;
+            if (item.reason && item.reason.includes('Solicitud')) {
+                reasonBadge = `<span class="badge badge-alta"><i class="fa-solid fa-file-circle-check"></i> ${item.reason}</span>`;
+            }
+
+            tr.innerHTML = `
+                <td><strong>${item.id}</strong></td>
+                <td>${item.areaName} (${item.areaId})</td>
+                <td>${reasonBadge}</td>
+                <td>${dateCleanStr}</td>
+                <td><strong style="color: var(--primary);">${dateNextStr}</strong></td>
+                <td><span style="font-size:0.82rem; color:#00f2fe;"><i class="fa-solid fa-vector-square"></i> ${item.mapSection}</span></td>
+                <td>${item.cleanedBy}</td>
+                <td>${item.notes}</td>
+            `;
+
+            historyTbody.appendChild(tr);
+        });
     }
 
     function getStatusBadgeHtml(status) {

@@ -43,3 +43,17 @@ public class FloorCleaningRecord
     [JsonPropertyName("height_percent")]
     public double HeightPercent { get; set; } = 20.0;
 }
+
+public class CleaningHistoryDto
+{
+    public string Id { get; set; } = string.Empty;
+    public string AreaId { get; set; } = string.Empty;
+    public string AreaName { get; set; } = string.Empty;
+    public string Reason { get; set; } = string.Empty;
+    public DateTime CleanedDate { get; set; } = DateTime.UtcNow;
+    public DateTime NextCleaningDate { get; set; } = DateTime.UtcNow.AddDays(90);
+    public string CleanedBy { get; set; } = "Personal ESD";
+    public string MapSection { get; set; } = "Toda el área";
+    public string Notes { get; set; } = string.Empty;
+}
+

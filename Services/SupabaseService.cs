@@ -110,7 +110,11 @@ public class SupabaseService
                 fecha_proxima_limpieza = record.FechaProximaLimpieza,
                 limpiado_por = record.LimpiadoPor,
                 observaciones = record.Observaciones,
-                request_id = record.RequestId
+                request_id = record.RequestId,
+                x_percent = record.XPercent,
+                y_percent = record.YPercent,
+                width_percent = record.WidthPercent,
+                height_percent = record.HeightPercent
             };
 
             httpRequest.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
@@ -721,27 +725,39 @@ public class SupabaseService
                     foreach (var elem in doc.RootElement.EnumerateArray())
                     {
                         string cuarto = GetPropertyString(elem, "cuarto", "area_id") ?? "";
-                        if (CleanString(cuarto) == CleanString(areaId) || string.IsNullOrEmpty(areaId))
+                        if (!string.IsNullOrEmpty(areaId) && CleanString(cuarto) != CleanString(areaId))
                         {
-                            var zone = new CleanedZone
-                            {
-                                Id = GetPropertyString(elem, "id") ?? Guid.NewGuid().ToString(),
-                                AreaId = cuarto,
-                                RequestId = GetPropertyString(elem, "request_id") ?? "",
-                                XPercent = GetPropertyDouble(elem, "x_percent", "coord_x") ?? 10.0,
-                                YPercent = GetPropertyDouble(elem, "y_percent", "coord_y") ?? 10.0,
-                                WidthPercent = GetPropertyDouble(elem, "width_percent", "ancho") ?? 20.0,
-                                HeightPercent = GetPropertyDouble(elem, "height_percent", "alto") ?? 20.0,
-                                CleanedBy = GetPropertyString(elem, "limpiado_por", "tecnico") ?? "Personal de Limpieza ESD",
-                                Notes = GetPropertyString(elem, "observaciones", "notas") ?? ""
-                            };
-
-                            string? dateStr = GetPropertyString(elem, "fecha_limpieza");
-                            if (!string.IsNullOrEmpty(dateStr) && DateTimeOffset.TryParse(dateStr, out var dto))
-                                zone.CleanedDate = dto.UtcDateTime;
-
-                            result.Add(zone);
+                            continue;
                         }
+
+                        double? x = GetPropertyDouble(elem, "x_percent", "coord_x");
+                        double? y = GetPropertyDouble(elem, "y_percent", "coord_y");
+                        double? w = GetPropertyDouble(elem, "width_percent", "ancho");
+                        double? h = GetPropertyDouble(elem, "height_percent", "alto");
+
+                        if (!x.HasValue || !y.HasValue || !w.HasValue || !h.HasValue || (w.Value <= 0 && h.Value <= 0))
+                        {
+                            continue;
+                        }
+
+                        var zone = new CleanedZone
+                        {
+                            Id = GetPropertyString(elem, "id") ?? Guid.NewGuid().ToString(),
+                            AreaId = string.IsNullOrEmpty(cuarto) ? areaId : cuarto,
+                            RequestId = GetPropertyString(elem, "request_id") ?? "",
+                            XPercent = x.Value,
+                            YPercent = y.Value,
+                            WidthPercent = w.Value,
+                            HeightPercent = h.Value,
+                            CleanedBy = GetPropertyString(elem, "limpiado_por", "tecnico") ?? "Personal de Limpieza ESD",
+                            Notes = GetPropertyString(elem, "observaciones", "notas") ?? ""
+                        };
+
+                        string? dateStr = GetPropertyString(elem, "fecha_limpieza");
+                        if (!string.IsNullOrEmpty(dateStr) && DateTimeOffset.TryParse(dateStr, out var dto))
+                            zone.CleanedDate = dto.UtcDateTime;
+
+                        result.Add(zone);
                     }
                 }
             }
@@ -749,6 +765,94 @@ public class SupabaseService
         catch (Exception ex)
         {
             Console.WriteLine($"[Supabase limpiezas_piso Fetch Zones Error] {ex.Message}");
+        }
+
+        return result;
+    }
+
+    public async Task<List<CleaningHistoryDto>> GetCleaningHistoryFromSupabaseAsync()
+    {
+        var result = new List<CleaningHistoryDto>();
+        if (string.IsNullOrEmpty(_settings.Url) || _settings.Url.Contains("your-project")) return result;
+
+        try
+        {
+            string endpoint = $"{_settings.Url.TrimEnd('/')}/rest/v1/limpiezas_piso?select=*&order=fecha_limpieza.desc";
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, endpoint);
+            httpRequest.Headers.Add("apikey", _settings.AnonKey);
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.AnonKey);
+
+            var response = await _httpClient.SendAsync(httpRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                string json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var elem in doc.RootElement.EnumerateArray())
+                    {
+                        string areaId = GetPropertyString(elem, "cuarto", "area_id") ?? "Desconocido";
+                        string reqId = GetPropertyString(elem, "request_id") ?? "";
+                        
+                        double? x = GetPropertyDouble(elem, "x_percent", "coord_x");
+                        double? y = GetPropertyDouble(elem, "y_percent", "coord_y");
+                        double? w = GetPropertyDouble(elem, "width_percent", "ancho");
+                        double? h = GetPropertyDouble(elem, "height_percent", "alto");
+                        string punto = GetPropertyString(elem, "punto", "point_id") ?? "";
+
+                        string section = "Toda el área";
+                        if (x.HasValue && y.HasValue && w.HasValue && h.HasValue && (w.Value > 0 || h.Value > 0))
+                        {
+                            section = $"Recuadro (X: {x.Value}%, Y: {y.Value}%, Ancho: {w.Value}%, Alto: {h.Value}%)";
+                        }
+                        else if (!string.IsNullOrEmpty(punto) && punto != "ALL")
+                        {
+                            section = $"Punto de medición {punto}";
+                        }
+
+                        string reasonStr = !string.IsNullOrEmpty(reqId) 
+                            ? $"Por Solicitud (Folio: {reqId})" 
+                            : (GetPropertyString(elem, "razon", "motivo", "observaciones") ?? "Limpieza Programada / Directa");
+
+                        var item = new CleaningHistoryDto
+                        {
+                            Id = GetPropertyString(elem, "id") ?? Guid.NewGuid().ToString(),
+                            AreaId = areaId,
+                            AreaName = GetPropertyString(elem, "area_name") ?? GetAreaDisplayName(areaId),
+                            Reason = reasonStr,
+                            CleanedBy = GetPropertyString(elem, "limpiado_por", "tecnico") ?? "Personal ESD",
+                            Notes = GetPropertyString(elem, "observaciones", "notas") ?? "Sin observaciones",
+                            MapSection = section
+                        };
+
+                        string? dateClean = GetPropertyString(elem, "fecha_limpieza");
+                        if (!string.IsNullOrEmpty(dateClean) && DateTimeOffset.TryParse(dateClean, out var dtoClean))
+                        {
+                            item.CleanedDate = dtoClean.UtcDateTime;
+                        }
+                        else
+                        {
+                            item.CleanedDate = DateTime.UtcNow;
+                        }
+
+                        string? dateNext = GetPropertyString(elem, "fecha_proxima_limpieza");
+                        if (!string.IsNullOrEmpty(dateNext) && DateTimeOffset.TryParse(dateNext, out var dtoNext))
+                        {
+                            item.NextCleaningDate = dtoNext.UtcDateTime;
+                        }
+                        else
+                        {
+                            item.NextCleaningDate = item.CleanedDate.AddDays(90);
+                        }
+
+                        result.Add(item);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Supabase Fetch Cleaning History Error] {ex.Message}");
         }
 
         return result;

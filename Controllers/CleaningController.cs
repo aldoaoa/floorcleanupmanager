@@ -280,6 +280,13 @@ public class CleaningController : ControllerBase
         }
     }
 
+    [HttpGet("history")]
+    public async Task<IActionResult> GetCleaningHistory()
+    {
+        var history = await _supabaseService.GetCleaningHistoryFromSupabaseAsync();
+        return Ok(history);
+    }
+
     [HttpPost("settings")]
     public IActionResult UpdateSettings([FromBody] SupabaseSettings newSettings)
     {
