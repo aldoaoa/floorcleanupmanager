@@ -55,5 +55,9 @@ public class CleaningHistoryDto
     public string CleanedBy { get; set; } = "Personal ESD";
     public string MapSection { get; set; } = "Toda el área";
     public string Notes { get; set; } = string.Empty;
+    public double XPercent { get; set; }
+    public double YPercent { get; set; }
+    public double WidthPercent { get; set; }
+    public double HeightPercent { get; set; }
 }
 

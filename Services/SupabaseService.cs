@@ -860,7 +860,11 @@ public class SupabaseService
                             Reason = reasonStr,
                             CleanedBy = GetPropertyString(elem, "limpiado_por", "tecnico") ?? "Personal ESD",
                             Notes = GetPropertyString(elem, "observaciones", "notas") ?? "Sin observaciones",
-                            MapSection = section
+                            MapSection = section,
+                            XPercent = x ?? 0,
+                            YPercent = y ?? 0,
+                            WidthPercent = w ?? 0,
+                            HeightPercent = h ?? 0
                         };
 
                         string? dateClean = GetPropertyString(elem, "fecha_limpieza");

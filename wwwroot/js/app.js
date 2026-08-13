@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderEditorMap();
     }
 
-    function renderMapOverlay() {
+    async function renderMapOverlay() {
         mapOverlay.innerHTML = '';
 
         if (!currentSelectedArea) return;
@@ -344,6 +344,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 mapOverlay.appendChild(pin);
             });
+        }
+
+        // Fetch & Render ONLY the LATEST Cleaned Zone for this room as reference
+        try {
+            const res = await fetch(`/api/cleaning/zones/${currentSelectedArea.areaId}`);
+            if (res.ok) {
+                const zones = await res.json();
+                if (zones && zones.length > 0) {
+                    zones.sort((a, b) => new Date(b.cleanedDate) - new Date(a.cleanedDate));
+                    const latestZone = zones[0];
+
+                    const rect = document.createElement('div');
+                    rect.className = 'cleaned-zone-rect';
+                    rect.style.left = `${latestZone.xPercent}%`;
+                    rect.style.top = `${latestZone.yPercent}%`;
+                    rect.style.width = `${latestZone.widthPercent}%`;
+                    rect.style.height = `${latestZone.heightPercent}%`;
+                    rect.style.borderColor = '#10b981';
+                    rect.style.background = 'rgba(16, 185, 129, 0.15)';
+                    rect.style.pointerEvents = 'none';
+
+                    const dateStr = new Date(latestZone.cleanedDate).toLocaleDateString('es-MX');
+                    rect.innerHTML = `
+                        <div class="zone-label-badge" style="background:#10b981; color:#000;">
+                            <i class="fa-solid fa-broom"></i> Última Limpieza Realizada: ${dateStr}
+                        </div>
+                    `;
+                    mapOverlay.appendChild(rect);
+                }
+            }
+        } catch (err) {
+            console.error('Error loading latest cleaned zone for map overlay:', err);
         }
 
         // Render Reticle if selected
@@ -672,7 +704,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (!filtered || filtered.length === 0) {
-            historyTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-dim);">No hay registros de limpiezas realizadas que coincidan con los filtros.</td></tr>`;
+            historyTbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--text-dim);">No hay registros de limpiezas realizadas que coincidan con los filtros.</td></tr>`;
             return;
         }
 
@@ -695,10 +727,83 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td><span style="font-size:0.82rem; color:#00f2fe;"><i class="fa-solid fa-vector-square"></i> ${item.mapSection}</span></td>
                 <td>${item.cleanedBy}</td>
                 <td>${item.notes}</td>
+                <td><button class="btn-secondary btn-sm-view-hist" data-id="${item.id}"><i class="fa-solid fa-map-location-dot"></i> Ver en Mapa</button></td>
             `;
 
             historyTbody.appendChild(tr);
         });
+
+        // Add Click event for History Detail Modal
+        document.querySelectorAll('.btn-sm-view-hist').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const histId = btn.getAttribute('data-id');
+                const item = currentHistory.find(h => h.id === histId);
+                if (item) showHistoryDetailModal(item);
+            });
+        });
+    }
+
+    function showHistoryDetailModal(item) {
+        const modal = document.getElementById('modal-detail');
+        const body = document.getElementById('detail-modal-body');
+
+        const mapConfig = currentMaps.find(m => m.areaId === item.areaId);
+        const mapImageUrl = mapConfig ? mapConfig.imageUrl : '/uploads/smt_floor_plan.svg';
+
+        const dateCleanStr = item.cleanedDate ? new Date(item.cleanedDate).toLocaleString('es-MX') : 'Reciente';
+        const dateNextStr = item.nextCleaningDate ? new Date(item.nextCleaningDate).toLocaleDateString('es-MX') : 'Por definir';
+
+        let zoneOverlayHtml = '';
+        if (item.widthPercent && item.widthPercent > 0) {
+            zoneOverlayHtml = `
+                <div class="cleaned-zone-rect" style="left:${item.xPercent}%; top:${item.yPercent}%; width:${item.widthPercent}%; height:${item.heightPercent}%; border-color:#10b981; background:rgba(16,185,129,0.25);">
+                    <div class="zone-label-badge" style="background:#10b981; color:#000;">
+                        <i class="fa-solid fa-broom"></i> Zona Limpiada (${dateCleanStr})
+                    </div>
+                </div>
+            `;
+        } else {
+            zoneOverlayHtml = `
+                <div class="reticle-marker" style="left: 50%; top: 50%;"></div>
+            `;
+        }
+
+        body.innerHTML = `
+            <div style="margin-bottom: 1.2rem;">
+                <h4 style="color:var(--primary); margin-bottom: 0.5rem;">
+                    <i class="fa-solid fa-location-dot"></i> Mapa de Área Limpiada (${item.areaName}):
+                </h4>
+                <div class="modal-map-viewport">
+                    <div class="modal-map-wrapper">
+                        <img src="${mapImageUrl}" alt="Mapa de Área" />
+                        <div class="modal-map-overlay">
+                            ${zoneOverlayHtml}
+                        </div>
+                    </div>
+                </div>
+                <div style="font-size:0.82rem; color:var(--text-muted); text-align:center;">
+                    <i class="fa-solid fa-vector-square"></i> Sección: ${item.mapSection}
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div>
+                    <h4 style="color:var(--primary); margin-bottom: 0.5rem;">Detalle del Registro de Limpieza</h4>
+                    <p><strong>Folio / ID:</strong> ${item.id}</p>
+                    <p><strong>Área:</strong> ${item.areaName} (${item.areaId})</p>
+                    <p><strong>Origen / Motivo:</strong> ${item.reason}</p>
+                    <p><strong>Fecha Realización:</strong> ${dateCleanStr}</p>
+                    <p><strong>Próxima Limpieza Programada:</strong> ${dateNextStr}</p>
+                </div>
+                <div>
+                    <h4 style="color:var(--primary); margin-bottom: 0.5rem;">Responsable & Observaciones</h4>
+                    <p><strong>Realizado Por:</strong> ${item.cleanedBy}</p>
+                    <p><strong>Observaciones:</strong> ${item.notes || 'Sin observaciones'}</p>
+                </div>
+            </div>
+        `;
+
+        modal.classList.add('active');
     }
 
     function getStatusBadgeHtml(status) {
