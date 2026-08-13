@@ -103,6 +103,41 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Filters Event Listeners for Requests
+        const reqFilterIds = ['filter-req-status', 'filter-req-area', 'filter-req-date-from', 'filter-req-date-to'];
+        reqFilterIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', renderRequestsTable);
+        });
+
+        const btnClearReqFilters = document.getElementById('btn-clear-req-filters');
+        if (btnClearReqFilters) {
+            btnClearReqFilters.addEventListener('click', () => {
+                if (document.getElementById('filter-req-status')) document.getElementById('filter-req-status').value = 'TODOS';
+                if (document.getElementById('filter-req-area')) document.getElementById('filter-req-area').value = 'TODOS';
+                if (document.getElementById('filter-req-date-from')) document.getElementById('filter-req-date-from').value = '';
+                if (document.getElementById('filter-req-date-to')) document.getElementById('filter-req-date-to').value = '';
+                renderRequestsTable();
+            });
+        }
+
+        // Filters Event Listeners for Cleaning History
+        const histFilterIds = ['filter-hist-area', 'filter-hist-date-from', 'filter-hist-date-to'];
+        histFilterIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('change', renderHistoryTable);
+        });
+
+        const btnClearHistFilters = document.getElementById('btn-clear-hist-filters');
+        if (btnClearHistFilters) {
+            btnClearHistFilters.addEventListener('click', () => {
+                if (document.getElementById('filter-hist-area')) document.getElementById('filter-hist-area').value = 'TODOS';
+                if (document.getElementById('filter-hist-date-from')) document.getElementById('filter-hist-date-from').value = '';
+                if (document.getElementById('filter-hist-date-to')) document.getElementById('filter-hist-date-to').value = '';
+                renderHistoryTable();
+            });
+        }
+
         areaSelect.addEventListener('change', (e) => {
             selectArea(e.target.value);
         });
@@ -188,11 +223,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (editorAreaSelect) editorAreaSelect.innerHTML = '';
         if (cleanerAreaSelect) cleanerAreaSelect.innerHTML = '';
 
+        const filterReqArea = document.getElementById('filter-req-area');
+        const filterHistArea = document.getElementById('filter-hist-area');
+        if (filterReqArea) filterReqArea.innerHTML = '<option value="TODOS">-- Todas las Áreas --</option>';
+        if (filterHistArea) filterHistArea.innerHTML = '<option value="TODOS">-- Todas las Áreas --</option>';
+
         currentMaps.forEach(map => {
             const opt1 = document.createElement('option');
             opt1.value = map.areaId;
             opt1.textContent = `${map.areaId} - ${map.areaName}`;
             areaSelect.appendChild(opt1);
+
+            if (filterReqArea) {
+                const optR = document.createElement('option');
+                optR.value = map.areaId;
+                optR.textContent = `${map.areaId} - ${map.areaName}`;
+                filterReqArea.appendChild(optR);
+            }
+
+            if (filterHistArea) {
+                const optH = document.createElement('option');
+                optH.value = map.areaId;
+                optH.textContent = `${map.areaId} - ${map.areaName}`;
+                filterHistArea.appendChild(optH);
+            }
 
             if (editorAreaSelect) {
                 const opt2 = document.createElement('option');
@@ -589,12 +643,40 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!historyTbody) return;
         historyTbody.innerHTML = '';
 
-        if (!currentHistory || currentHistory.length === 0) {
-            historyTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-dim);">No hay registros de limpiezas realizadas.</td></tr>`;
+        const filterArea = document.getElementById('filter-hist-area')?.value || 'TODOS';
+        const filterDateFrom = document.getElementById('filter-hist-date-from')?.value;
+        const filterDateTo = document.getElementById('filter-hist-date-to')?.value;
+
+        let filtered = currentHistory.filter(item => {
+            // Filter by area
+            if (filterArea !== 'TODOS' && item.areaId !== filterArea) {
+                return false;
+            }
+
+            // Filter by date range
+            if (item.cleanedDate) {
+                const cleanDate = new Date(item.cleanedDate);
+                if (filterDateFrom) {
+                    const fromDate = new Date(filterDateFrom);
+                    fromDate.setHours(0, 0, 0, 0);
+                    if (cleanDate < fromDate) return false;
+                }
+                if (filterDateTo) {
+                    const toDate = new Date(filterDateTo);
+                    toDate.setHours(23, 59, 59, 999);
+                    if (cleanDate > toDate) return false;
+                }
+            }
+
+            return true;
+        });
+
+        if (!filtered || filtered.length === 0) {
+            historyTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-dim);">No hay registros de limpiezas realizadas que coincidan con los filtros.</td></tr>`;
             return;
         }
 
-        currentHistory.forEach(item => {
+        filtered.forEach(item => {
             const tr = document.createElement('tr');
             const dateCleanStr = item.cleanedDate ? new Date(item.cleanedDate).toLocaleString('es-MX') : 'Reciente';
             const dateNextStr = item.nextCleaningDate ? new Date(item.nextCleaningDate).toLocaleDateString('es-MX') : 'Por definir';
@@ -637,19 +719,59 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderRequestsTable() {
+        if (!requestsTbody) return;
         requestsTbody.innerHTML = '';
 
-        if (currentRequests.length === 0) {
-            requestsTbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--text-dim);">No hay solicitudes registradas.</td></tr>`;
+        const filterStatus = document.getElementById('filter-req-status')?.value || 'TODOS';
+        const filterArea = document.getElementById('filter-req-area')?.value || 'TODOS';
+        const filterDateFrom = document.getElementById('filter-req-date-from')?.value;
+        const filterDateTo = document.getElementById('filter-req-date-to')?.value;
+
+        let filtered = currentRequests.filter(req => {
+            // Filter by status
+            const st = (req.status || req.authorizationStatus || 'AUTORIZADA').toUpperCase();
+            if (filterStatus !== 'TODOS') {
+                if (filterStatus === 'AUTORIZADA' && st !== 'AUTORIZADA') return false;
+                if (filterStatus === 'EN_PROCESO' && st !== 'EN_PROCESO') return false;
+                if (filterStatus === 'LIMPIEZA_COMPLETADA' && st !== 'LIMPIEZA_COMPLETADA' && st !== 'REALIZADA') return false;
+                if (filterStatus === 'CANCELADA' && st !== 'CANCELADA') return false;
+                if (filterStatus === 'DENEGADA' && !st.includes('DENEGADA')) return false;
+            }
+
+            // Filter by area
+            if (filterArea !== 'TODOS' && req.areaId !== filterArea) {
+                return false;
+            }
+
+            // Filter by date range
+            if (req.requestDate) {
+                const reqDate = new Date(req.requestDate);
+                if (filterDateFrom) {
+                    const fromDate = new Date(filterDateFrom);
+                    fromDate.setHours(0, 0, 0, 0);
+                    if (reqDate < fromDate) return false;
+                }
+                if (filterDateTo) {
+                    const toDate = new Date(filterDateTo);
+                    toDate.setHours(23, 59, 59, 999);
+                    if (reqDate > toDate) return false;
+                }
+            }
+
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            requestsTbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--text-dim);">No hay solicitudes que coincidan con los filtros aplicados.</td></tr>`;
             return;
         }
 
-        currentRequests.forEach(req => {
+        filtered.forEach(req => {
             const tr = document.createElement('tr');
             const dateStr = new Date(req.requestDate).toLocaleString('es-MX');
             const resStr = req.lastEsdResistanceOhms ? req.lastEsdResistanceOhms.toExponential(1).toUpperCase() + ' Ω' : 'N/A';
 
-            let prioBadge = `<span class="badge badge-${req.priority.toLowerCase()}">${req.priority}</span>`;
+            let prioBadge = `<span class="badge badge-${req.priority ? req.priority.toLowerCase() : 'media'}">${req.priority || 'MEDIA'}</span>`;
             let statusBadge = getStatusBadgeHtml(req.status || req.authorizationStatus);
 
             tr.innerHTML = `

@@ -234,47 +234,111 @@
                 </div>
 
                 <!-- Subtab 1: Solicitudes Table -->
-                <div id="subtab-requests-view" class="table-responsive">
-                    <table class="custom-table" id="requests-table">
-                        <thead>
-                            <tr>
-                                <th>ID Solicitud</th>
-                                <th>Fecha</th>
-                                <th>Área</th>
-                                <th>Motivo</th>
-                                <th>Días s/Limpieza</th>
-                                <th>Resistencia ESD</th>
-                                <th>Prioridad</th>
-                                <th>Estado</th>
-                                <th>Evidencia</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="requests-tbody">
-                            <!-- Populated via JS -->
-                        </tbody>
-                    </table>
+                <div id="subtab-requests-view">
+                    <!-- Filters Bar for Requests -->
+                    <div class="filters-bar" style="display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 1rem 0; background: rgba(0,0,0,0.3); padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var(--border-color); align-items: center;">
+                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-filter"></i> Estado:</label>
+                            <select id="filter-req-status" class="custom-select" style="padding: 0.3rem 0.6rem; font-size: 0.82rem;">
+                                <option value="TODOS">-- Todos los Estados --</option>
+                                <option value="AUTORIZADA">Autorizadas / Pendientes</option>
+                                <option value="EN_PROCESO">En Proceso</option>
+                                <option value="LIMPIEZA_COMPLETADA">Completadas / Realizadas</option>
+                                <option value="CANCELADA">Canceladas</option>
+                                <option value="DENEGADA">Denegadas</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-layer-group"></i> Área:</label>
+                            <select id="filter-req-area" class="custom-select" style="padding: 0.3rem 0.6rem; font-size: 0.82rem;">
+                                <option value="TODOS">-- Todas las Áreas --</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-calendar"></i> Desde:</label>
+                            <input type="date" id="filter-req-date-from" class="custom-input" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; width: auto;" />
+                        </div>
+
+                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-calendar"></i> Hasta:</label>
+                            <input type="date" id="filter-req-date-to" class="custom-input" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; width: auto;" />
+                        </div>
+
+                        <button id="btn-clear-req-filters" class="btn-secondary btn-sm" type="button" style="font-size: 0.78rem; padding: 0.35rem 0.7rem;">
+                            <i class="fa-solid fa-xmark"></i> Limpiar Filtros
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="custom-table" id="requests-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Solicitud</th>
+                                    <th>Fecha</th>
+                                    <th>Área</th>
+                                    <th>Motivo</th>
+                                    <th>Días s/Limpieza</th>
+                                    <th>Resistencia ESD</th>
+                                    <th>Prioridad</th>
+                                    <th>Estado</th>
+                                    <th>Evidencia</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requests-tbody">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <!-- Subtab 2: Historial de Limpiezas Realizadas Table -->
-                <div id="subtab-history-view" class="table-responsive hidden">
-                    <table class="custom-table" id="history-table">
-                        <thead>
-                            <tr>
-                                <th>ID / Folio</th>
-                                <th>Área / Cuarto</th>
-                                <th>Razón / Origen</th>
-                                <th>Fecha Realización</th>
-                                <th>Próxima Limpieza</th>
-                                <th>Sección del Mapa Limpiada</th>
-                                <th>Realizado Por</th>
-                                <th>Observaciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="history-tbody">
-                            <!-- Populated via JS -->
-                        </tbody>
-                    </table>
+                <div id="subtab-history-view" class="hidden">
+                    <!-- Filters Bar for History -->
+                    <div class="filters-bar" style="display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 1rem 0; background: rgba(0,0,0,0.3); padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var(--border-color); align-items: center;">
+                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-layer-group"></i> Área:</label>
+                            <select id="filter-hist-area" class="custom-select" style="padding: 0.3rem 0.6rem; font-size: 0.82rem;">
+                                <option value="TODOS">-- Todas las Áreas --</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-calendar"></i> Fecha Realización Desde:</label>
+                            <input type="date" id="filter-hist-date-from" class="custom-input" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; width: auto;" />
+                        </div>
+
+                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-calendar"></i> Hasta:</label>
+                            <input type="date" id="filter-hist-date-to" class="custom-input" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; width: auto;" />
+                        </div>
+
+                        <button id="btn-clear-hist-filters" class="btn-secondary btn-sm" type="button" style="font-size: 0.78rem; padding: 0.35rem 0.7rem;">
+                            <i class="fa-solid fa-xmark"></i> Limpiar Filtros
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="custom-table" id="history-table">
+                            <thead>
+                                <tr>
+                                    <th>ID / Folio</th>
+                                    <th>Área / Cuarto</th>
+                                    <th>Razón / Origen</th>
+                                    <th>Fecha Realización</th>
+                                    <th>Próxima Limpieza</th>
+                                    <th>Sección del Mapa Limpiada</th>
+                                    <th>Realizado Por</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-tbody">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </section>
@@ -601,10 +665,10 @@
 
     <!-- Footer -->
     <footer class="app-footer">
-        <p>Sistema de Solicitudes de Limpieza Cera Antiestática &copy; 2026. Cumplimiento con <strong>ANSI/ESD S20.20-2021</strong>. <span class="version-badge" id="app-version-badge">v1.5.0</span></p>
+        <p>Sistema de Solicitudes de Limpieza Cera Antiestática &copy; 2026. Cumplimiento con <strong>ANSI/ESD S20.20-2021</strong>. <span class="version-badge" id="app-version-badge">v1.5.1</span></p>
     </footer>
 
     <!-- App Script -->
-    <script src="js/app.js?v=1.5.0"></script>
+    <script src="js/app.js?v=1.5.1"></script>
 </body>
 </html>
