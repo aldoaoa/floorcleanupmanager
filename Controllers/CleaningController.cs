@@ -264,14 +264,14 @@ public class CleaningController : ControllerBase
     }
 
     [HttpPost("zones")]
-    public IActionResult AddCleanedZone([FromBody] CreateCleanedZoneDto dto)
+    public async Task<IActionResult> AddCleanedZone([FromBody] CreateCleanedZoneDto dto)
     {
         if (string.IsNullOrEmpty(dto.AreaId))
             return BadRequest(new { message = "El área es obligatoria." });
 
         try
         {
-            var zone = _storageService.AddCleanedZone(dto);
+            var zone = await _storageService.AddCleanedZoneAsync(dto);
             return Ok(new { message = "Recuadro de área limpiada guardado correctamente.", zone });
         }
         catch (Exception ex)

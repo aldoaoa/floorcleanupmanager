@@ -95,31 +95,63 @@ public class SupabaseService
         try
         {
             string endpoint = $"{_settings.Url.TrimEnd('/')}/rest/v1/limpiezas_piso";
+            
+            // Try payload with rectangle coordinates
+            var payload = new Dictionary<string, object?>
+            {
+                ["id"] = record.Id,
+                ["cuarto"] = record.AreaId,
+                ["area_name"] = record.AreaName,
+                ["punto"] = record.PointId,
+                ["fecha_limpieza"] = record.FechaLimpieza,
+                ["fecha_proxima_limpieza"] = record.FechaProximaLimpieza,
+                ["limpiado_por"] = record.LimpiadoPor,
+                ["observaciones"] = record.Observaciones,
+                ["request_id"] = record.RequestId,
+                ["x_percent"] = record.XPercent,
+                ["y_percent"] = record.YPercent,
+                ["width_percent"] = record.WidthPercent,
+                ["height_percent"] = record.HeightPercent
+            };
+
             var httpRequest = new HttpRequestMessage(HttpMethod.Post, endpoint);
             httpRequest.Headers.Add("apikey", _settings.AnonKey);
             httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.AnonKey);
             httpRequest.Headers.Add("Prefer", "resolution=merge-duplicates");
-
-            var payload = new
-            {
-                id = record.Id,
-                cuarto = record.AreaId,
-                area_name = record.AreaName,
-                punto = record.PointId,
-                fecha_limpieza = record.FechaLimpieza,
-                fecha_proxima_limpieza = record.FechaProximaLimpieza,
-                limpiado_por = record.LimpiadoPor,
-                observaciones = record.Observaciones,
-                request_id = record.RequestId,
-                x_percent = record.XPercent,
-                y_percent = record.YPercent,
-                width_percent = record.WidthPercent,
-                height_percent = record.HeightPercent
-            };
-
             httpRequest.Content = new StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+
             var response = await _httpClient.SendAsync(httpRequest);
-            Console.WriteLine($"[Supabase limpiezas_piso Sync] ID '{record.Id}' -> Status {response.StatusCode}");
+            Console.WriteLine($"[Supabase limpiezas_piso Primary Sync] ID '{record.Id}' -> Status {response.StatusCode}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                // Fallback payload without rectangle columns (embedded in observaciones)
+                string fullObs = string.IsNullOrWhiteSpace(record.Observaciones) 
+                    ? $"[Recuadro X:{record.XPercent}%, Y:{record.YPercent}%, Ancho:{record.WidthPercent}%, Alto:{record.HeightPercent}%]" 
+                    : $"{record.Observaciones} [Recuadro X:{record.XPercent}%, Y:{record.YPercent}%, Ancho:{record.WidthPercent}%, Alto:{record.HeightPercent}%]";
+
+                var fallbackPayload = new
+                {
+                    id = record.Id,
+                    cuarto = record.AreaId,
+                    area_name = record.AreaName,
+                    punto = record.PointId,
+                    fecha_limpieza = record.FechaLimpieza,
+                    fecha_proxima_limpieza = record.FechaProximaLimpieza,
+                    limpiado_por = record.LimpiadoPor,
+                    observaciones = fullObs,
+                    request_id = record.RequestId
+                };
+
+                var fallbackRequest = new HttpRequestMessage(HttpMethod.Post, endpoint);
+                fallbackRequest.Headers.Add("apikey", _settings.AnonKey);
+                fallbackRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.AnonKey);
+                fallbackRequest.Headers.Add("Prefer", "resolution=merge-duplicates");
+                fallbackRequest.Content = new StringContent(JsonSerializer.Serialize(fallbackPayload), System.Text.Encoding.UTF8, "application/json");
+
+                var fallbackResponse = await _httpClient.SendAsync(fallbackRequest);
+                Console.WriteLine($"[Supabase limpiezas_piso Fallback Sync] ID '{record.Id}' -> Status {fallbackResponse.StatusCode}");
+            }
         }
         catch (Exception ex)
         {
@@ -800,10 +832,16 @@ public class SupabaseService
                         double? h = GetPropertyDouble(elem, "height_percent", "alto");
                         string punto = GetPropertyString(elem, "punto", "point_id") ?? "";
 
+                        string obs = GetPropertyString(elem, "observaciones", "notas") ?? "";
                         string section = "Toda el área";
                         if (x.HasValue && y.HasValue && w.HasValue && h.HasValue && (w.Value > 0 || h.Value > 0))
                         {
                             section = $"Recuadro (X: {x.Value}%, Y: {y.Value}%, Ancho: {w.Value}%, Alto: {h.Value}%)";
+                        }
+                        else if (obs.Contains("[Recuadro"))
+                        {
+                            int startIdx = obs.IndexOf("[Recuadro");
+                            section = obs.Substring(startIdx).Trim('[', ']');
                         }
                         else if (!string.IsNullOrEmpty(punto) && punto != "ALL")
                         {
@@ -812,7 +850,7 @@ public class SupabaseService
 
                         string reasonStr = !string.IsNullOrEmpty(reqId) 
                             ? $"Por Solicitud (Folio: {reqId})" 
-                            : (GetPropertyString(elem, "razon", "motivo", "observaciones") ?? "Limpieza Programada / Directa");
+                            : "Limpieza Programada / Directa";
 
                         var item = new CleaningHistoryDto
                         {

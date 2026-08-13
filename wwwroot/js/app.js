@@ -1662,6 +1662,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         cleanerDateInput.value = now.toISOString().slice(0, 16);
                     }
                     drawnBoxCoords = null;
+                    isDrawingBox = false;
+                    if (drawingBoxPreview) {
+                        drawingBoxPreview.style.width = '0px';
+                        drawingBoxPreview.style.height = '0px';
+                        drawingBoxPreview.classList.add('hidden');
+                    }
+                    if (cleanerBoxText) {
+                        cleanerBoxText.innerHTML = '<i class="fa-solid fa-vector-square"></i> <span>Ningún recuadro dibujado (Haz clic en el mapa para trazar)</span>';
+                    }
 
                     await loadMaps();
                     await loadRequests();

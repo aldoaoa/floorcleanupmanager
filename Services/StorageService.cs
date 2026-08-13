@@ -356,7 +356,7 @@ public class StorageService
         return map?.CleanedZones.OrderByDescending(z => z.CleanedDate).ToList() ?? new List<CleanedZone>();
     }
 
-    public CleanedZone AddCleanedZone(CreateCleanedZoneDto dto)
+    public async Task<CleanedZone> AddCleanedZoneAsync(CreateCleanedZoneDto dto)
     {
         var map = GetMapByAreaId(dto.AreaId);
         if (map == null) throw new InvalidOperationException($"No existe el área con ID '{dto.AreaId}'");
@@ -378,6 +378,28 @@ public class StorageService
         map.CleanedZones.Add(zone);
         map.LastCleaningDate = dto.CleanedDate;
 
+        var cleaningRecord = new FloorCleaningRecord
+        {
+            Id = zone.Id,
+            AreaId = map.AreaId,
+            AreaName = map.AreaName,
+            PointId = "RECUADRO",
+            FechaLimpieza = dto.CleanedDate,
+            FechaProximaLimpieza = dto.CleanedDate.AddDays(90),
+            LimpiadoPor = zone.CleanedBy,
+            Observaciones = string.IsNullOrWhiteSpace(dto.Notes) ? "Limpieza de recuadro en mapa" : dto.Notes,
+            RequestId = dto.RequestId,
+            XPercent = dto.XPercent,
+            YPercent = dto.YPercent,
+            WidthPercent = dto.WidthPercent,
+            HeightPercent = dto.HeightPercent
+        };
+
+        if (_supabaseService != null)
+        {
+            await _supabaseService.SyncCleaningRecordToSupabaseAsync(cleaningRecord);
+        }
+
         if (!string.IsNullOrEmpty(dto.RequestId))
         {
             var updateDto = new UpdateRequestStatusDto
@@ -388,24 +410,14 @@ public class StorageService
             };
             UpdateRequestStatus(dto.RequestId, updateDto, out _);
         }
-        else
-        {
-            var cleaningRecord = new FloorCleaningRecord
-            {
-                Id = Guid.NewGuid().ToString(),
-                AreaId = map.AreaId,
-                AreaName = map.AreaName,
-                PointId = "ALL",
-                FechaLimpieza = dto.CleanedDate,
-                FechaProximaLimpieza = dto.CleanedDate.AddDays(90),
-                LimpiadoPor = zone.CleanedBy,
-                Observaciones = string.IsNullOrWhiteSpace(dto.Notes) ? "Limpieza de recuadro en mapa" : dto.Notes
-            };
-            _ = _supabaseService?.SyncCleaningRecordToSupabaseAsync(cleaningRecord);
-        }
 
         SaveToDisk();
         return zone;
+    }
+
+    public CleanedZone AddCleanedZone(CreateCleanedZoneDto dto)
+    {
+        return AddCleanedZoneAsync(dto).GetAwaiter().GetResult();
     }
 
     public string SaveEvidenceFile(string fileName, string base64Data, string bucketName = "evidencias_limpieza")
