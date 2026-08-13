@@ -321,6 +321,20 @@ document.addEventListener('DOMContentLoaded', () => {
         renderEditorMap();
     }
 
+    function extractRectangleCoords(notes) {
+        if (!notes) return null;
+        const match = notes.match(/X[:=]\s*([0-9.]+)\s*%?,?\s*Y[:=]\s*([0-9.]+)\s*%?,?\s*(?:Ancho|W)[:=]\s*([0-9.]+)\s*%?,?\s*(?:Alto|H)[:=]\s*([0-9.]+)\s*%/i);
+        if (match) {
+            return {
+                xPercent: parseFloat(match[1]),
+                yPercent: parseFloat(match[2]),
+                widthPercent: parseFloat(match[3]),
+                heightPercent: parseFloat(match[4])
+            };
+        }
+        return null;
+    }
+
     async function renderMapOverlay() {
         mapOverlay.innerHTML = '';
 
@@ -346,36 +360,52 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Fetch & Render ONLY the LATEST Cleaned Zone for this room as reference
+        // Fetch & Render ALL Cleaned Zones for this room as reference
         try {
             const res = await fetch(`/api/cleaning/zones/${currentSelectedArea.areaId}`);
             if (res.ok) {
                 const zones = await res.json();
                 if (zones && zones.length > 0) {
-                    zones.sort((a, b) => new Date(b.cleanedDate) - new Date(a.cleanedDate));
-                    const latestZone = zones[0];
+                    zones.forEach(zone => {
+                        let x = zone.xPercent;
+                        let y = zone.yPercent;
+                        let w = zone.widthPercent;
+                        let h = zone.heightPercent;
 
-                    const rect = document.createElement('div');
-                    rect.className = 'cleaned-zone-rect';
-                    rect.style.left = `${latestZone.xPercent}%`;
-                    rect.style.top = `${latestZone.yPercent}%`;
-                    rect.style.width = `${latestZone.widthPercent}%`;
-                    rect.style.height = `${latestZone.heightPercent}%`;
-                    rect.style.borderColor = '#10b981';
-                    rect.style.background = 'rgba(16, 185, 129, 0.15)';
-                    rect.style.pointerEvents = 'none';
+                        if ((!w || w <= 0) && zone.notes) {
+                            const ext = extractRectangleCoords(zone.notes);
+                            if (ext) {
+                                x = ext.xPercent;
+                                y = ext.yPercent;
+                                w = ext.widthPercent;
+                                h = ext.heightPercent;
+                            }
+                        }
 
-                    const dateStr = new Date(latestZone.cleanedDate).toLocaleDateString('es-MX');
-                    rect.innerHTML = `
-                        <div class="zone-label-badge" style="background:#10b981; color:#000;">
-                            <i class="fa-solid fa-broom"></i> Última Limpieza Realizada: ${dateStr}
-                        </div>
-                    `;
-                    mapOverlay.appendChild(rect);
+                        if (w && w > 0) {
+                            const rect = document.createElement('div');
+                            rect.className = 'cleaned-zone-rect';
+                            rect.style.left = `${x}%`;
+                            rect.style.top = `${y}%`;
+                            rect.style.width = `${w}%`;
+                            rect.style.height = `${h}%`;
+                            rect.style.borderColor = '#10b981';
+                            rect.style.background = 'rgba(16, 185, 129, 0.18)';
+                            rect.style.pointerEvents = 'none';
+
+                            const dateStr = new Date(zone.cleanedDate).toLocaleDateString('es-MX');
+                            rect.innerHTML = `
+                                <div class="zone-label-badge" style="background:#10b981; color:#000;">
+                                    <i class="fa-solid fa-broom"></i> Limpiado: ${dateStr}
+                                </div>
+                            `;
+                            mapOverlay.appendChild(rect);
+                        }
+                    });
                 }
             }
         } catch (err) {
-            console.error('Error loading latest cleaned zone for map overlay:', err);
+            console.error('Error loading cleaned zones for map overlay:', err);
         }
 
         // Render Reticle if selected
@@ -408,13 +438,57 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Priority Live Preview Engine
-    function updatePriorityPreview() {
+    async function updatePriorityPreview() {
         if (!currentSelectedArea || !selectedCoords) {
             priorityPreviewContent.innerHTML = `<span style="color: var(--text-dim);">Haz clic sobre el plano para evaluar las condiciones de resistencia ESD y regla de 3 meses.</span>`;
             return;
         }
 
-        const days = calculateDays(currentSelectedArea.lastCleaningDate);
+        // Fetch Cleaned Zones for current area to check against selectedCoords (with 2% margin)
+        let matchingZone = null;
+        try {
+            const res = await fetch(`/api/cleaning/zones/${currentSelectedArea.areaId}`);
+            if (res.ok) {
+                const zones = await res.json();
+                if (zones && zones.length > 0) {
+                    const margin = 2.0; // 2% proximity margin
+                    for (const z of zones) {
+                        let x = z.xPercent;
+                        let y = z.yPercent;
+                        let w = z.widthPercent;
+                        let h = z.heightPercent;
+
+                        if ((!w || w <= 0) && z.notes) {
+                            const ext = extractRectangleCoords(z.notes);
+                            if (ext) {
+                                x = ext.xPercent;
+                                y = ext.yPercent;
+                                w = ext.widthPercent;
+                                h = ext.heightPercent;
+                            }
+                        }
+
+                        if (w && w > 0) {
+                            const minX = x - margin;
+                            const maxX = x + w + margin;
+                            const minY = y - margin;
+                            const maxY = y + h + margin;
+
+                            if (selectedCoords.xPercent >= minX && selectedCoords.xPercent <= maxX &&
+                                selectedCoords.yPercent >= minY && selectedCoords.yPercent <= maxY) {
+                                matchingZone = { ...z, xPercent: x, yPercent: y, widthPercent: w, heightPercent: h };
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Error checking matching zone:', err);
+        }
+
+        const lastCleanDate = matchingZone ? matchingZone.cleanedDate : currentSelectedArea.lastCleaningDate;
+        const days = calculateDays(lastCleanDate);
         
         // Find nearest measurement point
         let nearestPt = null;
@@ -432,28 +506,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const resistance = nearestPt ? nearestPt.lastResistanceOhms : 4.5e7;
         const isHighRes = resistance > 1e8;
+        const isHighCrit = currentSelectedArea.criticality === 'ALTA';
         const meets3Months = days >= 90;
+        const meets2MonthsHighCrit = isHighCrit && days > 60 && resistance > 1e6;
 
         let badgePriority = '';
         let badgeStatus = '';
         let textExplanation = '';
+        let zoneMatchInfo = matchingZone 
+            ? `<p style="font-size:0.83rem; color:#10b981; margin-bottom:0.4rem;"><i class="fa-solid fa-vector-square"></i> <strong>Recuadro Detectado en Coordenada:</strong> Limpiado el ${new Date(matchingZone.cleanedDate).toLocaleDateString('es-MX')} (${days} días transcurridos).</p>`
+            : `<p style="font-size:0.83rem; color:var(--text-muted); margin-bottom:0.4rem;"><i class="fa-solid fa-circle-info"></i> <strong>Sin recuadro reciente en estas coordenadas.</strong> (Evaluado con fecha base del área: ${days} días).</p>`;
 
         if (isHighRes) {
             badgePriority = `<span class="badge badge-alta">PRIORIDAD ALTA</span>`;
             badgeStatus = `<span class="badge badge-autorizada">AUTORIZADA</span>`;
-            textExplanation = `¡Atención! La medición ESD en ${nearestPt ? nearestPt.code : 'zona'} es de <strong>${resistance.toExponential(1).toUpperCase()} &Omega; (> 1.0e8 &Omega;)</strong>. Excede la resistencia máxima permitida. Según ANSI/ESD S20.20-2021 se autoriza renovación inmediata de cera sin esperar 3 meses.`;
+            textExplanation = `¡Atención! La resistencia ESD en ${nearestPt ? nearestPt.code : 'zona'} es de <strong>${resistance.toExponential(1).toUpperCase()} &Omega; (> 1.0e8 &Omega;)</strong>. Excede el límite máximo permitido por ANSI/ESD S20.20-2021. Se autoriza renovación inmediata de cera sin importar la fecha previa.`;
+        } else if (meets2MonthsHighCrit) {
+            badgePriority = `<span class="badge badge-alta">PRIORIDAD ALTA</span>`;
+            badgeStatus = `<span class="badge badge-autorizada">AUTORIZADA</span>`;
+            textExplanation = `Excepción por Criticidad ALTA: Han transcurrido <strong>${days} días (> 2 meses)</strong> en un recuadro de criticidad ALTA con resistencia (${resistance.toExponential(1).toUpperCase()} &Omega; > 1.0e6 &Omega;). Pre-aprobada para proteger componentes sensibles.`;
+        } else if (matchingZone && !meets3Months) {
+            badgePriority = `<span class="badge badge-baja">PRIORIDAD BAJA</span>`;
+            badgeStatus = `<span class="badge badge-denegada">DENEGADA (PERIODICIDAD)</span>`;
+            textExplanation = `El punto seleccionado está dentro/próximo de un recuadro limpiado hace solo <strong>${days} días (< 3 meses)</strong>. Resistencia conforme (${resistance.toExponential(1).toUpperCase()} &Omega;). Faltan ${90 - days} días para habilitar mantenimiento.`;
         } else if (!meets3Months) {
             badgePriority = `<span class="badge badge-baja">PRIORIDAD BAJA</span>`;
             badgeStatus = `<span class="badge badge-denegada">DENEGADA (PERIODICIDAD)</span>`;
-            textExplanation = `Solo han transcurrido <strong>${days} días</strong> de la última limpieza (Requerido: ≥ 90 días). La resistencia actual (${resistance.toExponential(1).toUpperCase()} &Omega;) es conforme (&le; 1e8 &Omega;).`;
+            textExplanation = `Han transcurrido <strong>${days} días</strong> desde la última limpieza registrada (< 3 meses). Resistencia conforme. Faltan ${90 - days} días.`;
         } else {
-            const isHighCrit = currentSelectedArea.criticality === 'ALTA';
             badgePriority = isHighCrit ? `<span class="badge badge-alta">PRIORIDAD ALTA</span>` : `<span class="badge badge-media">PRIORIDAD MEDIA</span>`;
             badgeStatus = `<span class="badge badge-autorizada">AUTORIZADA</span>`;
-            textExplanation = `Han transcurrido <strong>${days} días</strong> (&ge; 3 meses). Área de criticidad ${currentSelectedArea.criticality}. Ciclado regular cumplido.`;
+            textExplanation = `Han transcurrido <strong>${days} días (&ge; 3 meses)</strong>. Ciclado regular cumplido.`;
         }
 
         priorityPreviewContent.innerHTML = `
+            ${zoneMatchInfo}
             <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">${badgeStatus} ${badgePriority}</div>
             <p style="font-size: 0.85rem; color: var(--text-main);">${textExplanation}</p>
         `;
@@ -753,10 +840,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const dateCleanStr = item.cleanedDate ? new Date(item.cleanedDate).toLocaleString('es-MX') : 'Reciente';
         const dateNextStr = item.nextCleaningDate ? new Date(item.nextCleaningDate).toLocaleDateString('es-MX') : 'Por definir';
 
+        let x = item.xPercent;
+        let y = item.yPercent;
+        let w = item.widthPercent;
+        let h = item.heightPercent;
+
+        if ((!w || w <= 0) && item.notes) {
+            const ext = extractRectangleCoords(item.notes);
+            if (ext) {
+                x = ext.xPercent;
+                y = ext.yPercent;
+                w = ext.widthPercent;
+                h = ext.heightPercent;
+            }
+        }
+
         let zoneOverlayHtml = '';
-        if (item.widthPercent && item.widthPercent > 0) {
+        if (w && w > 0) {
             zoneOverlayHtml = `
-                <div class="cleaned-zone-rect" style="left:${item.xPercent}%; top:${item.yPercent}%; width:${item.widthPercent}%; height:${item.heightPercent}%; border-color:#10b981; background:rgba(16,185,129,0.25);">
+                <div class="cleaned-zone-rect" style="left:${x}%; top:${y}%; width:${w}%; height:${h}%; border-color:#10b981; background:rgba(16,185,129,0.25);">
                     <div class="zone-label-badge" style="background:#10b981; color:#000;">
                         <i class="fa-solid fa-broom"></i> Zona Limpiada (${dateCleanStr})
                     </div>

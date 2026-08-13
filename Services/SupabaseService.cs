@@ -735,6 +735,28 @@ public class SupabaseService
         return $"Área {areaId}";
     }
 
+    private (double x, double y, double w, double h)? ExtractRectangleFromNotes(string notes)
+    {
+        if (string.IsNullOrEmpty(notes)) return null;
+
+        var match = System.Text.RegularExpressions.Regex.Match(
+            notes,
+            (@"X[:=]\s*([0-9.]+)\s*%?,?\s*Y[:=]\s*([0-9.]+)\s*%?,?\s*(?:Ancho|W)[:=]\s*([0-9.]+)\s*%?,?\s*(?:Alto|H)[:=]\s*([0-9.]+)\s*%"),
+            System.Text.RegularExpressions.RegexOptions.IgnoreCase
+        );
+
+        if (match.Success &&
+            double.TryParse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture, out double x) &&
+            double.TryParse(match.Groups[2].Value, System.Globalization.CultureInfo.InvariantCulture, out double y) &&
+            double.TryParse(match.Groups[3].Value, System.Globalization.CultureInfo.InvariantCulture, out double w) &&
+            double.TryParse(match.Groups[4].Value, System.Globalization.CultureInfo.InvariantCulture, out double h))
+        {
+            return (x, y, w, h);
+        }
+
+        return null;
+    }
+
     public async Task<List<CleanedZone>> GetCleanedZonesFromSupabaseAsync(string areaId)
     {
         var result = new List<CleanedZone>();
@@ -766,6 +788,19 @@ public class SupabaseService
                         double? y = GetPropertyDouble(elem, "y_percent", "coord_y");
                         double? w = GetPropertyDouble(elem, "width_percent", "ancho");
                         double? h = GetPropertyDouble(elem, "height_percent", "alto");
+                        string obs = GetPropertyString(elem, "observaciones", "notas") ?? "";
+
+                        if ((!x.HasValue || !w.HasValue || w.Value <= 0) && !string.IsNullOrEmpty(obs))
+                        {
+                            var extracted = ExtractRectangleFromNotes(obs);
+                            if (extracted.HasValue)
+                            {
+                                x = extracted.Value.x;
+                                y = extracted.Value.y;
+                                w = extracted.Value.w;
+                                h = extracted.Value.h;
+                            }
+                        }
 
                         if (!x.HasValue || !y.HasValue || !w.HasValue || !h.HasValue || (w.Value <= 0 && h.Value <= 0))
                         {
@@ -782,7 +817,7 @@ public class SupabaseService
                             WidthPercent = w.Value,
                             HeightPercent = h.Value,
                             CleanedBy = GetPropertyString(elem, "limpiado_por", "tecnico") ?? "Personal de Limpieza ESD",
-                            Notes = GetPropertyString(elem, "observaciones", "notas") ?? ""
+                            Notes = obs
                         };
 
                         string? dateStr = GetPropertyString(elem, "fecha_limpieza");
@@ -796,7 +831,7 @@ public class SupabaseService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Supabase limpiezas_piso Fetch Zones Error] {ex.Message}");
+            Console.WriteLine($"[Supabase GetCleanedZones Exception] {ex.Message}");
         }
 
         return result;
@@ -830,9 +865,22 @@ public class SupabaseService
                         double? y = GetPropertyDouble(elem, "y_percent", "coord_y");
                         double? w = GetPropertyDouble(elem, "width_percent", "ancho");
                         double? h = GetPropertyDouble(elem, "height_percent", "alto");
+                        string obs = GetPropertyString(elem, "observaciones", "notas") ?? "";
+
+                        if ((!x.HasValue || !w.HasValue || w.Value <= 0) && !string.IsNullOrEmpty(obs))
+                        {
+                            var extracted = ExtractRectangleFromNotes(obs);
+                            if (extracted.HasValue)
+                            {
+                                x = extracted.Value.x;
+                                y = extracted.Value.y;
+                                w = extracted.Value.w;
+                                h = extracted.Value.h;
+                            }
+                        }
+
                         string punto = GetPropertyString(elem, "punto", "point_id") ?? "";
 
-                        string obs = GetPropertyString(elem, "observaciones", "notas") ?? "";
                         string section = "Toda el área";
                         if (x.HasValue && y.HasValue && w.HasValue && h.HasValue && (w.Value > 0 || h.Value > 0))
                         {
