@@ -16,67 +16,93 @@ public class EsdEvaluationEngine
         var now = DateTime.UtcNow;
         request.AreaName = mapConfig.AreaName;
         request.AreaCriticality = mapConfig.Criticality;
-        request.AreaLastCleaningDate = mapConfig.LastCleaningDate;
         
-        var daysSinceLastCleaning = (int)(now - mapConfig.LastCleaningDate).TotalDays;
+        double resistanceOhms = nearestMeasurement?.ResistanceOhms ?? request.LastEsdResistanceOhms;
+        if (resistanceOhms <= 0) resistanceOhms = 4.5e7;
+        request.LastEsdResistanceOhms = resistanceOhms;
+
+        // Search for matching recent cleaning zone (including 2% margin)
+        var recentZone = FindMatchingCleanedZone(request.CoordXPercent, request.CoordYPercent, mapConfig.CleanedZones, marginPercent: 2.0);
+        
+        DateTime lastCleanDate = recentZone?.CleanedDate ?? mapConfig.LastCleaningDate;
+        request.AreaLastCleaningDate = lastCleanDate;
+
+        int daysSinceLastCleaning = (int)(now - lastCleanDate).TotalDays;
         if (daysSinceLastCleaning < 0) daysSinceLastCleaning = 0;
         request.DaysSinceLastCleaning = daysSinceLastCleaning;
 
-        double resistanceOhms = nearestMeasurement?.ResistanceOhms ?? 4.5e7; // Default 45 M-Ohms if missing
-        request.LastEsdResistanceOhms = resistanceOhms;
+        bool hasHighResistanceOverride = resistanceOhms > _settings.HighResistanceThresholdOhms; // > 1e8 ohms
+        bool isHighCriticalityArea = string.Equals(mapConfig.Criticality, "ALTA", StringComparison.OrdinalIgnoreCase);
 
-        // ANSI/ESD S20.20-2021 Rules
-        bool meets3MonthRule = daysSinceLastCleaning >= _settings.MinimumCleaningIntervalDays; // >= 90 days
-        bool hasHighResistance = resistanceOhms > _settings.HighResistanceThresholdOhms; // > 1e8 ohms
-
-        request.Meets3MonthRule = meets3MonthRule;
-        request.HasHighResistanceOverride = hasHighResistance;
+        request.HasHighResistanceOverride = hasHighResistanceOverride;
+        request.Meets3MonthRule = daysSinceLastCleaning >= 90;
 
         string summary;
         string priority;
         string status;
 
-        if (hasHighResistance)
+        // REGLA 1: Override por Resistencia Crítica (> 1e8 ohms) -> SIEMPRE AUTORIZADA
+        if (hasHighResistanceOverride)
         {
-            // If resistance > 1e8 ohms, wax layer has degraded or accumulated insulator dust.
-            // Under ANSI/ESD S20.20-2021, cleaning & ESD re-waxing is immediately authorized and given HIGH priority.
             priority = "ALTA";
             status = "AUTORIZADA";
-            summary = $"AUTORIZADA (PRIORIDAD ALTA): La resistencia medida en la loseta ({resistanceOhms:1.0E+00} Ω) excede el umbral de 1.0E+08 Ω según ANSI/ESD S20.20-2021. Se autoriza la aplicación de cera antiestática sin esperar el ciclo regular de 3 meses.";
+            summary = $"AUTORIZADA (REGLA 1 - RESISTENCIA CRÍTICA): Resistencia medida ({resistanceOhms:1.0E+00} Ω) excede el máximo permitido (1.0E+08 Ω) según ANSI/ESD S20.20-2021. Se autoriza mantenimiento inmediato.";
         }
-        else if (!meets3MonthRule)
+        // REGLA 3: Excepción de Criticidad ALTA (> 2 meses / 60 días y resistencia > 1e6 ohms)
+        else if (isHighCriticalityArea && daysSinceLastCleaning > 60 && resistanceOhms > 1e6)
         {
-            // Less than 3 months and normal resistance -> DENIED by period rule
+            priority = "ALTA";
+            status = "AUTORIZADA";
+            summary = $"AUTORIZADA (REGLA 3 - CRITICIDAD ALTA): Zona de criticidad ALTA. Han transcurrido {daysSinceLastCleaning} días (> 2 meses) y la resistencia es {resistanceOhms:1.0E+00} Ω (> 1.0E+06 Ω). Se pre-aprueba mantenimiento por protección de componentes sensibles.";
+        }
+        // REGLA 2: Proteccion por Limpieza Reciente en Recuadro o Proximidad <= 2% (< 3 meses / 90 días)
+        else if (recentZone != null && daysSinceLastCleaning < 90)
+        {
             priority = "BAJA";
             status = "DENEGADA_PERIODO_MINIMO";
-            int remainingDays = _settings.MinimumCleaningIntervalDays - daysSinceLastCleaning;
-            summary = $"DENEGADA POR REGLA DE PERIODICIDAD: Han transcurrido {daysSinceLastCleaning} días desde la última limpieza (mínimo 90 días / 3 meses). La resistencia actual ({resistanceOhms:1.0E+00} Ω) está dentro del rango seguro (< 1.0E+08 Ω). Falta {remainingDays} día(s) para habilitar el mantenimiento programado.";
+            int remainingDays = 90 - daysSinceLastCleaning;
+            summary = $"DENEGADA (REGLA 2 - RECUADRO LIMPIADO RECIENTEMENTE): La ubicación seleccionada está dentro o a un margen de 2% de un área limpiada hace {daysSinceLastCleaning} días (< 3 meses). Resistencia en rango conforme ({resistanceOhms:1.0E+00} Ω). Faltan {remainingDays} días para autorizar.";
+        }
+        // REGLA 4: Ciclo Regular por Periodicidad (>= 90 días)
+        else if (daysSinceLastCleaning >= 90)
+        {
+            status = "AUTORIZADA";
+            priority = isHighCriticalityArea ? "ALTA" : (string.Equals(mapConfig.Criticality, "MEDIA", StringComparison.OrdinalIgnoreCase) ? "MEDIA" : "BAJA");
+            summary = $"AUTORIZADA (REGLA 4 - CICLO REGULAR): Cumplido ciclo regular de 3 meses ({daysSinceLastCleaning} días transcurridos). Aprobada según criticidad {mapConfig.Criticality}.";
         }
         else
         {
-            // >= 3 months elapsed and safe resistance -> Authorized according to criticality
-            status = "AUTORIZADA";
-            switch (mapConfig.Criticality.ToUpper())
-            {
-                case "ALTA":
-                    priority = "ALTA";
-                    summary = $"AUTORIZADA (PRIORIDAD ALTA): Ha cumplido el ciclo de 3 meses ({daysSinceLastCleaning} días transcurridos) en una zona de ALTA criticidad ESD (Línea SMT/Cuarto Limpio).";
-                    break;
-                case "MEDIA":
-                    priority = "MEDIA";
-                    summary = $"AUTORIZADA (PRIORIDAD MEDIA): Ha cumplido el ciclo de 3 meses ({daysSinceLastCleaning} días transcurridos) en área de criticidad media.";
-                    break;
-                default:
-                    priority = "BAJA";
-                    summary = $"AUTORIZADA (PRIORIDAD BAJA): Ha cumplido el ciclo de 3 meses ({daysSinceLastCleaning} días transcurridos) en área de baja criticidad.";
-                    break;
-            }
+            priority = "BAJA";
+            status = "DENEGADA_PERIODO_MINIMO";
+            int remainingDays = 90 - daysSinceLastCleaning;
+            summary = $"DENEGADA POR PERIODICIDAD: Han transcurrido {daysSinceLastCleaning} días en el área (< 3 meses). Resistencia en rango conforme ({resistanceOhms:1.0E+00} Ω). Faltan {remainingDays} días.";
         }
 
         request.Priority = priority;
         request.AuthorizationStatus = status;
+        request.Status = status;
         request.EvaluationSummary = summary;
 
         return request;
+    }
+
+    private CleanedZone? FindMatchingCleanedZone(double requestX, double requestY, List<CleanedZone> zones, double marginPercent = 2.0)
+    {
+        if (zones == null || !zones.Any()) return null;
+
+        foreach (var z in zones.OrderByDescending(z => z.CleanedDate))
+        {
+            double minX = z.XPercent - marginPercent;
+            double maxX = z.XPercent + z.WidthPercent + marginPercent;
+            double minY = z.YPercent - marginPercent;
+            double maxY = z.YPercent + z.HeightPercent + marginPercent;
+
+            if (requestX >= minX && requestX <= maxX && requestY >= minY && requestY <= maxY)
+            {
+                return z;
+            }
+        }
+
+        return null;
     }
 }
