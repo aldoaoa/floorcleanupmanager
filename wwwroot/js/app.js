@@ -1203,22 +1203,60 @@ document.addEventListener('DOMContentLoaded', () => {
         renderAuthorizedRequestsQueue();
     }
 
-    // Mouse Events for Box Drawing on Map Canvas
+    // Mouse Events for Box Drawing on Map Canvas (2-Click System)
     if (cleanerMapWrapper) {
-        cleanerMapWrapper.addEventListener('mousedown', (e) => {
+        // Prevent default drag behavior on the map wrapper and its children (like the img)
+        cleanerMapWrapper.addEventListener('dragstart', (e) => e.preventDefault());
+
+        cleanerMapWrapper.addEventListener('click', (e) => {
             if (!cleanerSelectedArea) return;
             const rect = cleanerMapWrapper.getBoundingClientRect();
-            isDrawingBox = true;
-            drawStartPx = {
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
-            };
-            if (drawingBoxPreview) {
-                drawingBoxPreview.style.left = `${drawStartPx.x}px`;
-                drawingBoxPreview.style.top = `${drawStartPx.y}px`;
-                drawingBoxPreview.style.width = '0px';
-                drawingBoxPreview.style.height = '0px';
-                drawingBoxPreview.classList.remove('hidden');
+
+            if (!isDrawingBox) {
+                // First Click: Start drawing
+                isDrawingBox = true;
+                drawStartPx = {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+                if (drawingBoxPreview) {
+                    drawingBoxPreview.style.left = `${drawStartPx.x}px`;
+                    drawingBoxPreview.style.top = `${drawStartPx.y}px`;
+                    drawingBoxPreview.style.width = '0px';
+                    drawingBoxPreview.style.height = '0px';
+                    drawingBoxPreview.classList.remove('hidden');
+                }
+                if (cleanerBoxText) {
+                    cleanerBoxText.innerHTML = '<i class="fa-solid fa-crosshairs"></i> <span>Mueve el ratón y haz clic de nuevo para finalizar el recuadro.</span>';
+                }
+            } else {
+                // Second Click: Finish drawing
+                isDrawingBox = false;
+                const currentX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+                const currentY = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+
+                const minX = Math.min(drawStartPx.x, currentX);
+                const minY = Math.min(drawStartPx.y, currentY);
+                const widthPx = Math.abs(currentX - drawStartPx.x);
+                const heightPx = Math.abs(currentY - drawStartPx.y);
+
+                if (drawingBoxPreview) drawingBoxPreview.classList.add('hidden');
+
+                if (widthPx < 10 || heightPx < 10) {
+                    if (cleanerBoxText) cleanerBoxText.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <span>Recuadro muy pequeño. Haz clic para volver a trazar.</span>';
+                    return;
+                }
+
+                const xPercent = parseFloat(((minX / rect.width) * 100).toFixed(2));
+                const yPercent = parseFloat(((minY / rect.height) * 100).toFixed(2));
+                const widthPercent = parseFloat(((widthPx / rect.width) * 100).toFixed(2));
+                const heightPercent = parseFloat(((heightPx / rect.height) * 100).toFixed(2));
+
+                drawnBoxCoords = { xPercent, yPercent, widthPercent, heightPercent };
+                if (cleanerBoxText) {
+                    cleanerBoxText.innerHTML = `<strong>Recuadro Listo:</strong> X=${xPercent}%, Y=${yPercent}%, Ancho=${widthPercent}%, Alto=${heightPercent}%`;
+                }
+                renderCleanerMapOverlay();
             }
         });
 
@@ -1237,35 +1275,6 @@ document.addEventListener('DOMContentLoaded', () => {
             drawingBoxPreview.style.top = `${minY}px`;
             drawingBoxPreview.style.width = `${width}px`;
             drawingBoxPreview.style.height = `${height}px`;
-        });
-
-        document.addEventListener('mouseup', (e) => {
-            if (!isDrawingBox || !cleanerSelectedArea) return;
-            isDrawingBox = false;
-
-            const rect = cleanerMapWrapper.getBoundingClientRect();
-            const currentX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-            const currentY = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
-
-            const minX = Math.min(drawStartPx.x, currentX);
-            const minY = Math.min(drawStartPx.y, currentY);
-            const widthPx = Math.abs(currentX - drawStartPx.x);
-            const heightPx = Math.abs(currentY - drawStartPx.y);
-
-            if (drawingBoxPreview) drawingBoxPreview.classList.add('hidden');
-
-            if (widthPx < 10 || heightPx < 10) return;
-
-            const xPercent = parseFloat(((minX / rect.width) * 100).toFixed(2));
-            const yPercent = parseFloat(((minY / rect.height) * 100).toFixed(2));
-            const widthPercent = parseFloat(((widthPx / rect.width) * 100).toFixed(2));
-            const heightPercent = parseFloat(((heightPx / rect.height) * 100).toFixed(2));
-
-            drawnBoxCoords = { xPercent, yPercent, widthPercent, heightPercent };
-            if (cleanerBoxText) {
-                cleanerBoxText.innerHTML = `<strong>Recuadro Listo:</strong> X=${xPercent}%, Y=${yPercent}%, Ancho=${widthPercent}%, Alto=${heightPercent}%`;
-            }
-            renderCleanerMapOverlay();
         });
     }
 
