@@ -3,26 +3,38 @@
    ========================================================================== */
 
 :root {
-    /* SMT Panel Palette */
+    /* Exact SMT Panel Demo Palette */
+    --color-primario: #2c3e50;
+    --color-primario-claro: #3c5a78;
+    --color-primario-oscuro: #1c2833;
+    --color-secundario: #34495e;
+    
+    --color-exito: #27ae60;
+    --color-advertencia: #f39c12;
+    --color-peligro: #e74c3c;
+    --color-info: #3498db;
+    --color-fondo: #f8f9fa;
+    --color-borde: #dee2e6;
+    
     --sidebar-bg: #1c2833;
     --sidebar-hover: #273746;
     --sidebar-active: #2c3e50;
     --sidebar-border: rgba(255, 255, 255, 0.08);
     --sidebar-text: #abb2b9;
     
-    --bg-main: #0b1326;
-    --bg-card: rgba(15, 23, 42, 0.85);
-    --border-color: rgba(56, 189, 248, 0.2);
-    --border-glow: rgba(0, 242, 254, 0.4);
+    --bg-main: #0f172a;
+    --bg-card: rgba(30, 41, 59, 0.92);
+    --border-color: #334155;
+    --border-glow: rgba(52, 152, 219, 0.35);
     
-    --st-primary: #00f2fe;
-    --st-primary-gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-    --st-secondary: #3b82f6;
+    --st-primary: #3498db;
+    --st-primary-gradient: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    --st-secondary: #2c3e50;
     
-    --status-green: #10b981;
-    --status-amber: #f59e0b;
-    --status-red: #ef4444;
-    --status-purple: #8b5cf6;
+    --status-green: #27ae60;
+    --status-amber: #f39c12;
+    --status-red: #e74c3c;
+    --status-purple: #8e44ad;
     
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
@@ -35,8 +47,8 @@
     --radius-md: 14px;
     --radius-lg: 20px;
     
-    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-    --shadow-neon: 0 0 20px rgba(0, 242, 254, 0.25);
+    --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+    --shadow-neon: 0 0 15px rgba(52, 152, 219, 0.25);
 }
 
 * {

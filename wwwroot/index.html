@@ -423,56 +423,33 @@
                             <div class="settings-grid">
                                 
                                 <!-- Area Map Uploader -->
-                                <div class="settings-card">
-                                    <h3><i class="fa-solid fa-image"></i> 1. Cargar Mapa de Piso (1 Imagen por Área)</h3>
+                                <div class="settings-card" style="grid-column: span 2;">
+                                    <h3><i class="fa-solid fa-image"></i> 1. Registrar Nueva Área / Cuarto de Producción (Subir Plano)</h3>
+                                    <p class="subtitle" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.88rem;">Suba la imagen del mapa/plano de planta para dar de alta un nuevo cuarto de producción o modificar uno existente.</p>
                                     <form id="form-upload-map" class="settings-form">
-                                        <div class="form-group">
-                                            <label>Código de Área (ID):</label>
-                                            <input type="text" id="cfg-area-id" class="custom-input" placeholder="ej. SMT-01, CLEAN-02" required />
+                                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                                            <div class="form-group">
+                                                <label>Código de Área (ID): <span class="req">*</span></label>
+                                                <input type="text" id="cfg-area-id" class="custom-input" placeholder="ej. SMT-01, CLEAN-02" required />
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Nombre del Área: <span class="req">*</span></label>
+                                                <input type="text" id="cfg-area-name" class="custom-input" placeholder="ej. Línea 2 SMT Cuarto Limpio" required />
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Criticidad ESD:</label>
+                                                <select id="cfg-area-criticality" class="custom-select">
+                                                    <option value="ALTA">ALTA (Componentes Clase 0 / 1A)</option>
+                                                    <option value="MEDIA">MEDIA (Ensamble General)</option>
+                                                    <option value="BAJA">BAJA (Almacén / Empaque)</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Seleccionar Imagen del Plano: <span class="req">*</span></label>
+                                                <input type="file" id="cfg-map-file" accept="image/*" class="custom-input" required />
+                                            </div>
                                         </div>
-                                        <div class="form-group">
-                                            <label>Nombre del Área:</label>
-                                            <input type="text" id="cfg-area-name" class="custom-input" placeholder="ej. Línea 2 SMT Cuarto Limpio" required />
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Criticidad ESD:</label>
-                                            <select id="cfg-area-criticality" class="custom-select">
-                                                <option value="ALTA">ALTA (Componentes Clase 0 / 1A)</option>
-                                                <option value="MEDIA">MEDIA (Ensamble General)</option>
-                                                <option value="BAJA">BAJA (Almacén / Empaque)</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Seleccionar Imagen del Plano:</label>
-                                            <input type="file" id="cfg-map-file" accept="image/*" class="custom-input" required />
-                                        </div>
-                                        <button type="submit" class="btn-primary"><i class="fa-solid fa-upload"></i> Subir Plano de Área</button>
-                                    </form>
-                                </div>
-
-                                <!-- Supabase Connection Config -->
-                                <div class="settings-card">
-                                    <h3><i class="fa-solid fa-database"></i> 2. Configuración de Base de Datos Supabase</h3>
-                                    <form id="form-supabase-config" class="settings-form">
-                                        <div class="form-group">
-                                            <label>Supabase URL API:</label>
-                                            <input type="text" id="cfg-sp-url" class="custom-input" placeholder="https://your-project.supabase.co" />
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Supabase Anon Key:</label>
-                                            <input type="password" id="cfg-sp-key" class="custom-input" placeholder="eyJhbGciOi..." />
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Tabla de Mediciones:</label>
-                                            <input type="text" id="cfg-sp-table" class="custom-input" value="esd_measurements" />
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Intervalo Mínimo de Limpieza (Días):</label>
-                                            <input type="number" id="cfg-min-days" class="custom-input" value="90" min="30" max="365" />
-                                            <small class="form-help">Regla norma: No menor a 3 meses (90 días).</small>
-                                        </div>
-                                        <button type="submit" class="btn-secondary"><i class="fa-solid fa-floppy-disk"></i> Guardar Ajustes Supabase</button>
-                                        <button type="button" id="btn-debug-supabase" class="btn-secondary" style="margin-top: 0.6rem; border-color: #00f2fe; color: #00f2fe;"><i class="fa-solid fa-bug"></i> Diagnosticar Conexión (validacion_piso)</button>
+                                        <button type="submit" class="btn-primary" style="margin-top: 0.8rem;"><i class="fa-solid fa-upload"></i> Registrar Plano de Área</button>
                                     </form>
                                 </div>
 
@@ -481,7 +458,7 @@
                             <!-- Coordinates Editor Canvas -->
                             <div class="settings-card margin-top">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
-                                    <h3><i class="fa-solid fa-location-dot"></i> 3. Editor Visual de Coordenadas de Puntos ESD</h3>
+                                    <h3><i class="fa-solid fa-location-dot"></i> 2. Editor Visual de Coordenadas de Puntos ESD</h3>
                                     <div style="display: flex; align-items: center; gap: 0.8rem;">
                                         <label for="editor-area-select" style="font-weight: 600; font-size: 0.9rem; color: var(--st-primary);">Seleccionar Área a Mapear:</label>
                                         <select id="editor-area-select" class="custom-select" style="min-width: 260px;">
@@ -521,7 +498,7 @@
 
                             <!-- Registered Areas Management Card -->
                             <div class="settings-card margin-top">
-                                <h3><i class="fa-solid fa-list-check"></i> 4. Gestión de Áreas y Cuartos Registrados</h3>
+                                <h3><i class="fa-solid fa-list-check"></i> 3. Gestión de Áreas y Cuartos Registrados</h3>
                                 <p class="subtitle">Administre, modifique o elimine las áreas/cuartos de producción registrados en el sistema.</p>
                                 
                                 <div class="table-responsive margin-top">
@@ -545,7 +522,7 @@
 
                             <!-- Registered Users Management Card (Admin Only) -->
                             <div class="settings-card margin-top">
-                                <h3><i class="fa-solid fa-users-gear"></i> 5. Gestión de Cuentas de Usuario y Permisos</h3>
+                                <h3><i class="fa-solid fa-users-gear"></i> 4. Gestión de Cuentas de Usuario y Permisos</h3>
                                 <p class="subtitle" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.88rem;">Cree nuevas cuentas de usuario, asigne permisos de acceso (Administrador o Técnico de Mantenimiento) y gestione las credenciales persistidas en la base de datos.</p>
 
                                 <div class="settings-grid">
@@ -708,7 +685,7 @@
 
             <!-- Footer -->
             <footer class="app-footer">
-                <p>Sistema de Solicitudes de Limpieza Cera Antiestática &copy; 2026. Cumplimiento con <strong>ANSI/ESD S20.20-2021</strong>. <span class="version-badge" id="app-version-badge">v2.2.0</span></p>
+                <p>Sistema de Solicitudes de Limpieza Cera Antiestática &copy; 2026. Cumplimiento con <strong>ANSI/ESD S20.20-2021</strong>. <span class="version-badge" id="app-version-badge">v2.4.0</span></p>
             </footer>
         </div>
     </div>
@@ -834,7 +811,7 @@
     </div>
 
     <!-- App Main Controller Script -->
-    <script src="js/app.js?v=2.2.0"></script>
+    <script src="js/app.js?v=2.4.0"></script>
 
     <!-- Sidebar Drawer Toggle Script -->
     <script>

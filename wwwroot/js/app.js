@@ -1396,40 +1396,48 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/api/cleaning/settings');
             if (res.ok) {
                 const settings = await res.json();
-                document.getElementById('cfg-sp-url').value = settings.url;
-                document.getElementById('cfg-sp-key').value = settings.anonKey;
-                document.getElementById('cfg-sp-table').value = settings.tableName;
-                document.getElementById('cfg-min-days').value = settings.minimumCleaningIntervalDays;
+                const spUrl = document.getElementById('cfg-sp-url');
+                const spKey = document.getElementById('cfg-sp-key');
+                const spTable = document.getElementById('cfg-sp-table');
+                const minDays = document.getElementById('cfg-min-days');
+
+                if (spUrl) spUrl.value = settings.url;
+                if (spKey) spKey.value = settings.anonKey;
+                if (spTable) spTable.value = settings.tableName;
+                if (minDays) minDays.value = settings.minimumCleaningIntervalDays;
             }
         } catch (err) {
             console.error('Error fetching settings:', err);
         }
     }
 
-    document.getElementById('form-supabase-config').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const settings = {
-            url: document.getElementById('cfg-sp-url').value,
-            anonKey: document.getElementById('cfg-sp-key').value,
-            tableName: document.getElementById('cfg-sp-table').value,
-            minimumCleaningIntervalDays: parseInt(document.getElementById('cfg-min-days').value, 10),
-            useMockFallback: false
-        };
+    const formSpConfig = document.getElementById('form-supabase-config');
+    if (formSpConfig) {
+        formSpConfig.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const settings = {
+                url: document.getElementById('cfg-sp-url')?.value || '',
+                anonKey: document.getElementById('cfg-sp-key')?.value || '',
+                tableName: document.getElementById('cfg-sp-table')?.value || 'esd_measurements',
+                minimumCleaningIntervalDays: parseInt(document.getElementById('cfg-min-days')?.value || '90', 10),
+                useMockFallback: false
+            };
 
-        try {
-            const res = await fetch('/api/cleaning/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(settings)
-            });
+            try {
+                const res = await fetch('/api/cleaning/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
 
-            if (res.ok) {
-                alert('Ajustes de Supabase y periodicidad guardados.');
+                if (res.ok) {
+                    alert('Ajustes de Supabase guardados.');
+                }
+            } catch (err) {
+                alert('Error guardando ajustes: ' + err.message);
             }
-        } catch (err) {
-            alert('Error guardando ajustes: ' + err.message);
-        }
-    });
+        });
+    }
 
     // Supabase Debug Button & Modal Listener
     const btnDebugSupabase = document.getElementById('btn-debug-supabase');
