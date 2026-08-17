@@ -497,19 +497,17 @@ public class StorageService
     }
 
     // ==========================================
-    // ==========================================
     // USER ACCOUNTS AUTHENTICATION & MANAGEMENT
     // ==========================================
-    public async Task<UserAccount?> AuthenticateUserAsync(string username, string password)
+    public UserAccount? AuthenticateUser(string username, string password)
     {
-        var users = await GetUsersAsync();
+        var users = GetUsers();
         var user = users.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
         if (user != null && user.PasswordHash == password)
         {
             return user;
         }
 
-        // Fallback for default admin / tecnico
         if (username.Equals("admin", StringComparison.OrdinalIgnoreCase) && password == "admin2026")
         {
             return new UserAccount { Id = "USR-01", Username = "admin", DisplayName = "Ing. Aldo Orozco (Admin)", Role = "ADMIN" };
@@ -522,25 +520,27 @@ public class StorageService
         return null;
     }
 
-    public UserAccount? AuthenticateUser(string username, string password)
-    {
-        return AuthenticateUserAsync(username, password).GetAwaiter().GetResult();
-    }
-
-    public async Task<List<UserAccount>> GetUsersAsync()
+    public List<UserAccount> GetUsers()
     {
         if (_supabaseService != null)
         {
-            var spUsers = await _supabaseService.GetUsersFromSupabaseAsync();
-            if (spUsers != null && spUsers.Any())
+            try
             {
-                lock (_mapConfigs)
+                var spUsers = _supabaseService.GetUsersFromSupabaseAsync().GetAwaiter().GetResult();
+                if (spUsers != null && spUsers.Any())
                 {
-                    _users.Clear();
-                    _users.AddRange(spUsers);
-                    SaveToDisk();
+                    lock (_mapConfigs)
+                    {
+                        _users.Clear();
+                        _users.AddRange(spUsers);
+                        SaveToDisk();
+                    }
+                    return spUsers;
                 }
-                return spUsers;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[GetUsers Supabase Fetch] {ex.Message}");
             }
         }
 
@@ -550,18 +550,13 @@ public class StorageService
         }
     }
 
-    public List<UserAccount> GetUsers()
+    public UserAccount CreateUser(CreateUserDto dto)
     {
-        return GetUsersAsync().GetAwaiter().GetResult();
-    }
-
-    public async Task<UserAccount> CreateUserAsync(CreateUserDto dto)
-    {
-        var currentUsers = await GetUsersAsync();
+        var currentUsers = GetUsers();
         var existing = currentUsers.FirstOrDefault(u => u.Username.Equals(dto.Username, StringComparison.OrdinalIgnoreCase));
         if (existing != null)
         {
-            throw new InvalidOperationException($"El nombre de usuario '{dto.Username}' ya existe en la base de datos.");
+            throw new InvalidOperationException($"El nombre de usuario '{dto.Username}' ya existe.");
         }
 
         var newUser = new UserAccount
@@ -581,22 +576,18 @@ public class StorageService
             SaveToDisk();
         }
 
+        // Direct insertion into Supabase Database
         if (_supabaseService != null)
         {
-            await _supabaseService.CreateUserInSupabaseAsync(newUser);
+            _ = _supabaseService.CreateUserInSupabaseAsync(newUser);
         }
 
         return newUser;
     }
 
-    public UserAccount CreateUser(CreateUserDto dto)
+    public bool DeleteUser(string username)
     {
-        return CreateUserAsync(dto).GetAwaiter().GetResult();
-    }
-
-    public async Task<bool> DeleteUserAsync(string username)
-    {
-        bool deletedLocal = false;
+        bool deleted = false;
         lock (_mapConfigs)
         {
             var user = _users.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
@@ -604,20 +595,15 @@ public class StorageService
             {
                 _users.Remove(user);
                 SaveToDisk();
-                deletedLocal = true;
+                deleted = true;
             }
         }
 
         if (_supabaseService != null)
         {
-            await _supabaseService.DeleteUserFromSupabaseAsync(username);
+            _ = _supabaseService.DeleteUserFromSupabaseAsync(username);
         }
 
-        return deletedLocal;
-    }
-
-    public bool DeleteUser(string username)
-    {
-        return DeleteUserAsync(username).GetAwaiter().GetResult();
+        return deleted;
     }
 }
