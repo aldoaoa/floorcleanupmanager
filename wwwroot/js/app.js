@@ -48,15 +48,26 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupNavigation() {
         const navBtns = document.querySelectorAll('.nav-btn');
         const tabContents = document.querySelectorAll('.tab-content');
+        const wrapper = document.getElementById('wrapper');
 
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 const targetTab = btn.getAttribute('data-tab');
+                if (!targetTab) return;
+
                 navBtns.forEach(b => b.classList.remove('active'));
                 tabContents.forEach(t => t.classList.remove('active'));
 
-                btn.classList.add('active');
-                document.getElementById(`tab-${targetTab}`).classList.add('active');
+                // Highlight matching sidebar buttons
+                document.querySelectorAll(`.nav-btn[data-tab="${targetTab}"]`).forEach(b => b.classList.add('active'));
+
+                const targetEl = document.getElementById(`tab-${targetTab}`);
+                if (targetEl) targetEl.classList.add('active');
+
+                // Auto-close sidebar on mobile
+                if (wrapper && window.innerWidth <= 991) {
+                    wrapper.classList.remove('sidebar-toggled');
+                }
 
                 if (targetTab === 'historial') {
                     loadRequests();
@@ -77,9 +88,75 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
+
+        // Sidebar Toggle Handler
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        if (menuToggle && wrapper) {
+            menuToggle.addEventListener('click', () => {
+                wrapper.classList.toggle('sidebar-toggled');
+            });
+        }
+        if (sidebarOverlay && wrapper) {
+            sidebarOverlay.addEventListener('click', () => {
+                wrapper.classList.remove('sidebar-toggled');
+            });
+        }
+
+        // Sidebar Instant Search Box
+        const sidebarSearchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        if (sidebarSearchInput && searchResults) {
+            sidebarSearchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase().trim();
+                if (!query) {
+                    searchResults.innerHTML = '';
+                    searchResults.classList.remove('active');
+                    return;
+                }
+                const matches = currentMaps.filter(m => (m.areaName && m.areaName.toLowerCase().includes(query)) || (m.areaId && m.areaId.toLowerCase().includes(query)));
+                if (matches.length > 0) {
+                    searchResults.innerHTML = matches.map(m => `
+                        <div class="search-result-item" data-area="${m.areaId}">
+                            <i class="bi bi-geo-alt me-1 text-primary"></i>
+                            <div>
+                                <strong>${m.areaName}</strong>
+                                <div style="font-size:0.75rem; color:#cbd5e0;">${m.areaId} • Criticidad ${m.criticality}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                    searchResults.classList.add('active');
+
+                    searchResults.querySelectorAll('.search-result-item').forEach(item => {
+                        item.addEventListener('click', () => {
+                            const areaId = item.getAttribute('data-area');
+                            const btnSol = document.querySelector('.nav-btn[data-tab="solicitud"]');
+                            if (btnSol) btnSol.click();
+                            if (areaSelect) {
+                                areaSelect.value = areaId;
+                                selectArea(areaId);
+                            }
+                            searchResults.classList.remove('active');
+                            sidebarSearchInput.value = '';
+                        });
+                    });
+                } else {
+                    searchResults.innerHTML = `<div class="p-2 text-muted" style="font-size:0.8rem; color:#a0aec0;">No se encontraron áreas.</div>`;
+                    searchResults.classList.add('active');
+                }
+            });
+        }
     }
 
     function setupEventListeners() {
+        // Modal Detail Close Handler
+        const btnCloseDetail = document.getElementById('btn-close-detail');
+        const modalDetail = document.getElementById('modal-detail');
+        if (btnCloseDetail && modalDetail) {
+            btnCloseDetail.addEventListener('click', () => {
+                modalDetail.classList.remove('active');
+            });
+        }
         // Subtab Handlers for Historial & Solicitudes
         const btnSubtabRequests = document.getElementById('btn-subtab-requests');
         const btnSubtabHistory = document.getElementById('btn-subtab-history');
@@ -735,7 +812,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 currentRequests = await res.json();
                 renderRequestsTable();
-                requestBadge.textContent = currentRequests.length;
+                if (requestBadge) requestBadge.textContent = currentRequests.length;
+                
+                const statReq = document.getElementById('stat-total-requests');
+                if (statReq) statReq.textContent = currentRequests.length;
             }
         } catch (err) {
             console.error('Error fetching requests:', err);
@@ -751,6 +831,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (res.ok) {
                 currentHistory = await res.json();
                 renderHistoryTable();
+
+                const statDone = document.getElementById('stat-cleanings-done');
+                if (statDone) statDone.textContent = currentHistory.length;
             }
         } catch (err) {
             console.error('Error fetching cleaning history:', err);
