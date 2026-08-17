@@ -304,14 +304,14 @@ public class CleaningController : ControllerBase
     // AUTHENTICATION & USER MANAGEMENT ENDPOINTS
     // ==========================================
     [HttpPost("/api/auth/login")]
-    public IActionResult Login([FromBody] LoginDto dto)
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
         {
             return BadRequest(new { message = "Debe ingresar usuario y contraseña." });
         }
 
-        var user = _storageService.AuthenticateUser(dto.Username, dto.Password);
+        var user = await _storageService.AuthenticateUserAsync(dto.Username, dto.Password);
         if (user == null)
         {
             return Unauthorized(new { message = "Usuario o contraseña incorrectos." });
@@ -332,14 +332,14 @@ public class CleaningController : ControllerBase
     }
 
     [HttpGet("/api/auth/users")]
-    public IActionResult GetUsers()
+    public async Task<IActionResult> GetUsers()
     {
-        var users = _storageService.GetUsers();
+        var users = await _storageService.GetUsersAsync();
         return Ok(users);
     }
 
     [HttpPost("/api/auth/users")]
-    public IActionResult CreateUser([FromBody] CreateUserDto dto)
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password) || string.IsNullOrWhiteSpace(dto.DisplayName))
         {
@@ -348,8 +348,8 @@ public class CleaningController : ControllerBase
 
         try
         {
-            var newUser = _storageService.CreateUser(dto);
-            return Ok(new { message = $"Usuario '{newUser.Username}' creado con éxito.", user = newUser });
+            var newUser = await _storageService.CreateUserAsync(dto);
+            return Ok(new { message = $"Usuario '{newUser.Username}' guardado directamente en la base de datos.", user = newUser });
         }
         catch (Exception ex)
         {
@@ -358,12 +358,12 @@ public class CleaningController : ControllerBase
     }
 
     [HttpDelete("/api/auth/users/{username}")]
-    public IActionResult DeleteUser(string username)
+    public async Task<IActionResult> DeleteUser(string username)
     {
-        bool deleted = _storageService.DeleteUser(username);
+        bool deleted = await _storageService.DeleteUserAsync(username);
         if (deleted)
         {
-            return Ok(new { message = $"Usuario '{username}' eliminado correctamente." });
+            return Ok(new { message = $"Usuario '{username}' eliminado de la base de datos." });
         }
         return NotFound(new { message = $"El usuario '{username}' no existe." });
     }

@@ -497,69 +497,106 @@ public class StorageService
     }
 
     // ==========================================
+    // ==========================================
     // USER ACCOUNTS AUTHENTICATION & MANAGEMENT
     // ==========================================
-    public UserAccount? AuthenticateUser(string username, string password)
+    public async Task<UserAccount?> AuthenticateUserAsync(string username, string password)
     {
-        lock (_mapConfigs)
+        var users = await GetUsersAsync();
+        var user = users.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+        if (user != null && user.PasswordHash == password)
         {
-            var user = _users.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
-            if (user != null && user.PasswordHash == password)
-            {
-                return user;
-            }
-
-            // Fallback for legacy admin or tecnico if not yet created
-            if (username.Equals("admin", StringComparison.OrdinalIgnoreCase) && password == "admin2026")
-            {
-                return new UserAccount { Id = "USR-01", Username = "admin", DisplayName = "Ing. Aldo Orozco (Admin)", Role = "ADMIN" };
-            }
-            if (username.Equals("tecnico", StringComparison.OrdinalIgnoreCase) && password == "esd2026")
-            {
-                return new UserAccount { Id = "USR-02", Username = "tecnico", DisplayName = "Téc. Mantenimiento ESD", Role = "TECHNICIAN" };
-            }
-
-            return null;
+            return user;
         }
+
+        // Fallback for default admin / tecnico
+        if (username.Equals("admin", StringComparison.OrdinalIgnoreCase) && password == "admin2026")
+        {
+            return new UserAccount { Id = "USR-01", Username = "admin", DisplayName = "Ing. Aldo Orozco (Admin)", Role = "ADMIN" };
+        }
+        if (username.Equals("tecnico", StringComparison.OrdinalIgnoreCase) && password == "esd2026")
+        {
+            return new UserAccount { Id = "USR-02", Username = "tecnico", DisplayName = "Téc. Mantenimiento ESD", Role = "TECHNICIAN" };
+        }
+
+        return null;
     }
 
-    public List<UserAccount> GetUsers()
+    public UserAccount? AuthenticateUser(string username, string password)
     {
+        return AuthenticateUserAsync(username, password).GetAwaiter().GetResult();
+    }
+
+    public async Task<List<UserAccount>> GetUsersAsync()
+    {
+        if (_supabaseService != null)
+        {
+            var spUsers = await _supabaseService.GetUsersFromSupabaseAsync();
+            if (spUsers != null && spUsers.Any())
+            {
+                lock (_mapConfigs)
+                {
+                    _users.Clear();
+                    _users.AddRange(spUsers);
+                    SaveToDisk();
+                }
+                return spUsers;
+            }
+        }
+
         lock (_mapConfigs)
         {
             return _users.ToList();
         }
     }
 
-    public UserAccount CreateUser(CreateUserDto dto)
+    public List<UserAccount> GetUsers()
     {
-        lock (_mapConfigs)
-        {
-            var existing = _users.FirstOrDefault(u => u.Username.Equals(dto.Username, StringComparison.OrdinalIgnoreCase));
-            if (existing != null)
-            {
-                throw new InvalidOperationException($"El nombre de usuario '{dto.Username}' ya existe.");
-            }
-
-            var newUser = new UserAccount
-            {
-                Id = $"USR-{_users.Count + 1:D2}",
-                Username = dto.Username.Trim(),
-                PasswordHash = dto.Password.Trim(),
-                DisplayName = dto.DisplayName.Trim(),
-                Role = dto.Role.ToUpper() == "ADMIN" ? "ADMIN" : "TECHNICIAN",
-                Department = string.IsNullOrWhiteSpace(dto.Department) ? "Mantenimiento ESD" : dto.Department.Trim(),
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _users.Add(newUser);
-            SaveToDisk();
-            return newUser;
-        }
+        return GetUsersAsync().GetAwaiter().GetResult();
     }
 
-    public bool DeleteUser(string username)
+    public async Task<UserAccount> CreateUserAsync(CreateUserDto dto)
     {
+        var currentUsers = await GetUsersAsync();
+        var existing = currentUsers.FirstOrDefault(u => u.Username.Equals(dto.Username, StringComparison.OrdinalIgnoreCase));
+        if (existing != null)
+        {
+            throw new InvalidOperationException($"El nombre de usuario '{dto.Username}' ya existe en la base de datos.");
+        }
+
+        var newUser = new UserAccount
+        {
+            Id = $"USR-{currentUsers.Count + 1:D2}",
+            Username = dto.Username.Trim(),
+            PasswordHash = dto.Password.Trim(),
+            DisplayName = dto.DisplayName.Trim(),
+            Role = dto.Role.ToUpper() == "ADMIN" ? "ADMIN" : "TECHNICIAN",
+            Department = string.IsNullOrWhiteSpace(dto.Department) ? "Mantenimiento ESD" : dto.Department.Trim(),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        lock (_mapConfigs)
+        {
+            _users.Add(newUser);
+            SaveToDisk();
+        }
+
+        if (_supabaseService != null)
+        {
+            await _supabaseService.CreateUserInSupabaseAsync(newUser);
+        }
+
+        return newUser;
+    }
+
+    public UserAccount CreateUser(CreateUserDto dto)
+    {
+        return CreateUserAsync(dto).GetAwaiter().GetResult();
+    }
+
+    public async Task<bool> DeleteUserAsync(string username)
+    {
+        bool deletedLocal = false;
         lock (_mapConfigs)
         {
             var user = _users.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
@@ -567,9 +604,20 @@ public class StorageService
             {
                 _users.Remove(user);
                 SaveToDisk();
-                return true;
+                deletedLocal = true;
             }
-            return false;
         }
+
+        if (_supabaseService != null)
+        {
+            await _supabaseService.DeleteUserFromSupabaseAsync(username);
+        }
+
+        return deletedLocal;
+    }
+
+    public bool DeleteUser(string username)
+    {
+        return DeleteUserAsync(username).GetAwaiter().GetResult();
     }
 }

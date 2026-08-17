@@ -947,4 +947,126 @@ public class SupabaseService
 
         return result;
     }
+
+    // ==========================================
+    // SUPABASE USER ACCOUNTS PERSISTENCE METHODS
+    // ==========================================
+    public async Task<List<UserAccount>> GetUsersFromSupabaseAsync()
+    {
+        var users = new List<UserAccount>();
+        if (string.IsNullOrEmpty(_settings.Url) || _settings.Url.Contains("your-project")) return users;
+
+        try
+        {
+            string endpoint = $"{_settings.Url.TrimEnd('/')}/rest/v1/usuarios?select=*";
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, endpoint);
+            httpRequest.Headers.Add("apikey", _settings.AnonKey);
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.AnonKey);
+
+            var response = await _httpClient.SendAsync(httpRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                string json = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var elem in doc.RootElement.EnumerateArray())
+                    {
+                        var u = new UserAccount
+                        {
+                            Id = GetPropertyString(elem, "id") ?? Guid.NewGuid().ToString(),
+                            Username = GetPropertyString(elem, "username", "usuario") ?? "",
+                            PasswordHash = GetPropertyString(elem, "password_hash", "password") ?? "",
+                            DisplayName = GetPropertyString(elem, "display_name", "nombre") ?? "",
+                            Role = (GetPropertyString(elem, "role", "rol") ?? "TECHNICIAN").ToUpper(),
+                            Department = GetPropertyString(elem, "department", "departamento") ?? "Mantenimiento ESD"
+                        };
+
+                        string? dateStr = GetPropertyString(elem, "created_at", "fecha_creacion");
+                        if (!string.IsNullOrEmpty(dateStr) && DateTimeOffset.TryParse(dateStr, out var dtoDate))
+                        {
+                            u.CreatedAt = dtoDate.UtcDateTime;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(u.Username))
+                        {
+                            users.Add(u);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Supabase GetUsers Error] {ex.Message}");
+        }
+
+        return users;
+    }
+
+    public async Task<UserAccount?> CreateUserInSupabaseAsync(UserAccount user)
+    {
+        if (string.IsNullOrEmpty(_settings.Url) || _settings.Url.Contains("your-project")) return user;
+
+        try
+        {
+            string endpoint = $"{_settings.Url.TrimEnd('/')}/rest/v1/usuarios";
+            var payload = new Dictionary<string, object>
+            {
+                { "id", user.Id },
+                { "username", user.Username },
+                { "password_hash", user.PasswordHash },
+                { "display_name", user.DisplayName },
+                { "role", user.Role },
+                { "department", user.Department },
+                { "created_at", user.CreatedAt.ToString("o") }
+            };
+
+            string bodyJson = JsonSerializer.Serialize(payload);
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            httpRequest.Headers.Add("apikey", _settings.AnonKey);
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.AnonKey);
+            httpRequest.Headers.Add("Prefer", "return=representation");
+            httpRequest.Content = new StringContent(bodyJson, System.Text.Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(httpRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"[Supabase User Created] Successfully saved '{user.Username}' to Supabase database.");
+                return user;
+            }
+            else
+            {
+                string errText = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[Supabase User Create Error] {response.StatusCode}: {errText}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Supabase CreateUser Exception] {ex.Message}");
+        }
+
+        return user;
+    }
+
+    public async Task<bool> DeleteUserFromSupabaseAsync(string username)
+    {
+        if (string.IsNullOrEmpty(_settings.Url) || _settings.Url.Contains("your-project")) return false;
+
+        try
+        {
+            string endpoint = $"{_settings.Url.TrimEnd('/')}/rest/v1/usuarios?username=eq.{Uri.EscapeDataString(username)}";
+            var httpRequest = new HttpRequestMessage(HttpMethod.Delete, endpoint);
+            httpRequest.Headers.Add("apikey", _settings.AnonKey);
+            httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.AnonKey);
+
+            var response = await _httpClient.SendAsync(httpRequest);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Supabase DeleteUser Exception] {ex.Message}");
+            return false;
+        }
+    }
 }
