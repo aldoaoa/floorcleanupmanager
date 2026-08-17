@@ -3,18 +3,23 @@ using EsdCleaningSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Bind to 0.0.0.0:5000 so other PCs on the network can access the system
-builder.WebHost.UseUrls("http://0.0.0.0:5000");
+// Configure binding: Allow Azure App Service to manage port binding when deployed, or bind to 0.0.0.0:5000 locally
+string? isAzure = Environment.GetEnvironmentVariable("WEBSITE_SITE_NAME");
+if (string.IsNullOrEmpty(isAzure))
+{
+    string port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 
-// Register App Configuration & Services
+// Register App Configuration & Services (Register SupabaseService before StorageService for DI)
 var supabaseSettings = new SupabaseSettings();
 builder.Services.AddSingleton(supabaseSettings);
-builder.Services.AddSingleton<StorageService>();
 builder.Services.AddSingleton<SupabaseService>();
+builder.Services.AddSingleton<StorageService>();
 builder.Services.AddSingleton<EsdEvaluationEngine>();
 
 builder.Services.AddCors(options =>
