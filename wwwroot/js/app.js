@@ -51,8 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const wrapper = document.getElementById('wrapper');
 
         navBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const targetTab = btn.getAttribute('data-tab');
+            btn.addEventListener('click', (e) => {
+                const targetBtn = e.target.closest('.nav-btn');
+                if (!targetBtn) return;
+                const targetTab = targetBtn.getAttribute('data-tab');
                 if (!targetTab) return;
 
                 navBtns.forEach(b => b.classList.remove('active'));
@@ -239,22 +241,30 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        document.getElementById('btn-refresh-requests').addEventListener('click', () => {
-            loadRequests();
-            loadCleaningHistory();
-        });
-        document.getElementById('btn-close-detail').addEventListener('click', () => {
-            document.getElementById('modal-detail').classList.remove('active');
-        });
+        const btnRefreshReq = document.getElementById('btn-refresh-requests');
+        if (btnRefreshReq) {
+            btnRefreshReq.addEventListener('click', () => {
+                loadRequests();
+                loadCleaningHistory();
+            });
+        }
+
+        const btnCloseDetailEl = document.getElementById('btn-close-detail');
+        if (btnCloseDetailEl) {
+            btnCloseDetailEl.addEventListener('click', () => {
+                const md = document.getElementById('modal-detail');
+                if (md) md.classList.remove('active');
+            });
+        }
 
         // Floor Condition Guide Cards Listener
         const cardStained = document.getElementById('card-guide-stained');
         const cardScratched = document.getElementById('card-guide-scratched');
-        const selectReasonEl = document.getElementById('req-reason');
+        const selectReasonEl = document.getElementById('select-reason') || document.getElementById('req-reason');
 
         function syncGuideCardHighlights(selectedVal) {
-            if (cardStained) cardStained.classList.toggle('active-guide', selectedVal === 'Piso manchado');
-            if (cardScratched) cardScratched.classList.toggle('active-guide', selectedVal === 'Piso con rayones');
+            if (cardStained) cardStained.classList.toggle('selected', selectedVal === 'Piso manchado');
+            if (cardScratched) cardScratched.classList.toggle('selected', selectedVal === 'Piso con rayones');
         }
 
         if (cardStained) {
@@ -724,9 +734,9 @@ document.addEventListener('DOMContentLoaded', () => {
             areaId: currentSelectedArea.areaId,
             coordXPercent: selectedCoords.xPercent,
             coordYPercent: selectedCoords.yPercent,
-            reason: document.getElementById('req-reason').value,
-            detailedNotes: document.getElementById('req-notes').value,
-            requestedBy: document.getElementById('req-user').value,
+            reason: (document.getElementById('select-reason') || document.getElementById('req-reason'))?.value || '',
+            detailedNotes: (document.getElementById('textarea-notes') || document.getElementById('req-notes'))?.value || '',
+            requestedBy: (document.getElementById('input-requested-by') || document.getElementById('req-user'))?.value || 'Aldo Orozco',
             evidenceFileName: uploadedEvidence.fileName,
             evidenceFileType: uploadedEvidence.fileType,
             evidenceBase64: uploadedEvidence.base64
@@ -1226,40 +1236,43 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/api/cleaning/settings');
             if (res.ok) {
                 const settings = await res.json();
-                document.getElementById('cfg-sp-url').value = settings.url;
-                document.getElementById('cfg-sp-key').value = settings.anonKey;
-                document.getElementById('cfg-sp-table').value = settings.tableName;
-                document.getElementById('cfg-min-days').value = settings.minimumCleaningIntervalDays;
+                if (document.getElementById('cfg-sp-url')) document.getElementById('cfg-sp-url').value = settings.url;
+                if (document.getElementById('cfg-sp-key')) document.getElementById('cfg-sp-key').value = settings.anonKey;
+                if (document.getElementById('cfg-sp-table')) document.getElementById('cfg-sp-table').value = settings.tableName;
+                if (document.getElementById('cfg-min-days')) document.getElementById('cfg-min-days').value = settings.minimumCleaningIntervalDays;
             }
         } catch (err) {
             console.error('Error fetching settings:', err);
         }
     }
 
-    document.getElementById('form-supabase-config').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const settings = {
-            url: document.getElementById('cfg-sp-url').value,
-            anonKey: document.getElementById('cfg-sp-key').value,
-            tableName: document.getElementById('cfg-sp-table').value,
-            minimumCleaningIntervalDays: parseInt(document.getElementById('cfg-min-days').value, 10),
-            useMockFallback: false
-        };
+    const formSupabaseConfig = document.getElementById('form-supabase-config');
+    if (formSupabaseConfig) {
+        formSupabaseConfig.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const settings = {
+                url: document.getElementById('cfg-sp-url')?.value || '',
+                anonKey: document.getElementById('cfg-sp-key')?.value || '',
+                tableName: document.getElementById('cfg-sp-table')?.value || '',
+                minimumCleaningIntervalDays: parseInt(document.getElementById('cfg-min-days')?.value || '90', 10),
+                useMockFallback: false
+            };
 
-        try {
-            const res = await fetch('/api/cleaning/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(settings)
-            });
+            try {
+                const res = await fetch('/api/cleaning/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
 
-            if (res.ok) {
-                alert('Ajustes de Supabase y periodicidad guardados.');
+                if (res.ok) {
+                    alert('Ajustes de Supabase y periodicidad guardados.');
+                }
+            } catch (err) {
+                alert('Error guardando ajustes: ' + err.message);
             }
-        } catch (err) {
-            alert('Error guardando ajustes: ' + err.message);
-        }
-    });
+        });
+    }
 
     // Supabase Debug Button & Modal Listener
     const btnDebugSupabase = document.getElementById('btn-debug-supabase');
@@ -1375,40 +1388,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Upload New Area Map (Ajustes)
-    document.getElementById('form-upload-map').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const areaId = document.getElementById('cfg-area-id').value.trim();
-        const areaName = document.getElementById('cfg-area-name').value.trim();
-        const criticality = document.getElementById('cfg-area-criticality').value;
-        const fileInput = document.getElementById('cfg-map-file');
-        
-        if (!fileInput.files[0]) return;
+    const formUploadMap = document.getElementById('form-upload-map');
+    if (formUploadMap) {
+        formUploadMap.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const areaId = document.getElementById('cfg-area-id')?.value.trim() || '';
+            const areaName = document.getElementById('cfg-area-name')?.value.trim() || '';
+            const criticality = document.getElementById('cfg-area-criticality')?.value || 'MEDIA';
+            const fileInput = document.getElementById('cfg-map-file');
+            
+            if (!fileInput || !fileInput.files[0]) return;
 
-        const reader = new FileReader();
-        reader.onload = async (evt) => {
-            const dto = {
-                areaId: areaId,
-                areaName: areaName,
-                criticality: criticality,
-                fileName: fileInput.files[0].name,
-                imageBase64: evt.target.result
+            const reader = new FileReader();
+            reader.onload = async (evt) => {
+                const dto = {
+                    areaId: areaId,
+                    areaName: areaName,
+                    criticality: criticality,
+                    fileName: fileInput.files[0].name,
+                    imageBase64: evt.target.result
+                };
+
+                const res = await fetch('/api/cleaning/maps/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dto)
+                });
+
+                if (res.ok) {
+                    alert(`Plano cargado correctamente para el área ${areaId}.`);
+                    formUploadMap.reset();
+                    await loadMaps();
+                    selectEditorArea(areaId);
+                }
             };
-
-            const res = await fetch('/api/cleaning/maps/upload', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dto)
-            });
-
-            if (res.ok) {
-                alert(`Plano cargado correctamente para el área ${areaId}.`);
-                document.getElementById('form-upload-map').reset();
-                await loadMaps();
-                selectEditorArea(areaId);
-            }
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-    });
+            reader.readAsDataURL(fileInput.files[0]);
+        });
+    }
 
     // Render Areas Management Table (Ajustes Card 4)
     function renderAreasManagementTable() {
@@ -1593,55 +1609,62 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.getElementById('editor-map-wrapper').addEventListener('click', (e) => {
-        if (!editorSelectedArea) return;
+    const editorMapWrapper = document.getElementById('editor-map-wrapper');
+    if (editorMapWrapper) {
+        editorMapWrapper.addEventListener('click', (e) => {
+            if (!editorSelectedArea) return;
 
-        const rect = e.currentTarget.getBoundingClientRect();
-        const xPercent = parseFloat((((e.clientX - rect.left) / rect.width) * 100).toFixed(2));
-        const yPercent = parseFloat((((e.clientY - rect.top) / rect.height) * 100).toFixed(2));
+            const rect = e.currentTarget.getBoundingClientRect();
+            const xPercent = parseFloat((((e.clientX - rect.left) / rect.width) * 100).toFixed(2));
+            const yPercent = parseFloat((((e.clientY - rect.top) / rect.height) * 100).toFixed(2));
 
-        const count = (editorSelectedArea.points ? editorSelectedArea.points.length : 0) + 1;
-        const newPt = {
-            id: `${count}`,
-            code: `${count}`,
-            label: `Punto de Medición ${count}`,
-            xPercent: xPercent,
-            yPercent: yPercent,
-            lastResistanceOhms: 4.5e7
-        };
+            const count = (editorSelectedArea.points ? editorSelectedArea.points.length : 0) + 1;
+            const newPt = {
+                id: `${count}`,
+                code: `${count}`,
+                label: `Punto de Medición ${count}`,
+                xPercent: xPercent,
+                yPercent: yPercent,
+                lastResistanceOhms: 4.5e7
+            };
 
-        if (!editorSelectedArea.points) editorSelectedArea.points = [];
-        editorSelectedArea.points.push(newPt);
+            if (!editorSelectedArea.points) editorSelectedArea.points = [];
+            editorSelectedArea.points.push(newPt);
 
-        renderEditorPoints();
-    });
+            renderEditorPoints();
+        });
+    }
 
-    document.getElementById('btn-save-points').addEventListener('click', async () => {
-        if (!editorSelectedArea) return;
+    const btnSavePoints = document.getElementById('btn-save-points');
+    if (btnSavePoints) {
+        btnSavePoints.addEventListener('click', async () => {
+            if (!editorSelectedArea) return;
 
-        // Read table inputs
-        const rows = pointsTbody.querySelectorAll('tr');
-        rows.forEach((tr, idx) => {
-            if (editorSelectedArea.points[idx]) {
-                editorSelectedArea.points[idx].code = tr.querySelector('.pt-code').value;
-                editorSelectedArea.points[idx].label = tr.querySelector('.pt-label').value;
-                editorSelectedArea.points[idx].lastResistanceOhms = parseFloat(tr.querySelector('.pt-res').value);
+            // Read table inputs
+            if (pointsTbody) {
+                const rows = pointsTbody.querySelectorAll('tr');
+                rows.forEach((tr, idx) => {
+                    if (editorSelectedArea.points[idx]) {
+                        editorSelectedArea.points[idx].code = tr.querySelector('.pt-code').value;
+                        editorSelectedArea.points[idx].label = tr.querySelector('.pt-label').value;
+                        editorSelectedArea.points[idx].lastResistanceOhms = parseFloat(tr.querySelector('.pt-res').value);
+                    }
+                });
             }
-        });
 
-        const dto = {
-            areaId: editorSelectedArea.areaId,
-            criticality: editorSelectedArea.criticality,
-            points: editorSelectedArea.points
-        };
+            const dto = {
+                areaId: editorSelectedArea.areaId,
+                criticality: editorSelectedArea.criticality,
+                points: editorSelectedArea.points
+            };
 
-        const res = await fetch('/api/cleaning/maps/points', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dto)
-        });
+            const res = await fetch('/api/cleaning/maps/points', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            });
 
-        if (res.ok) {
+            if (res.ok) {
             alert(`Coordenadas de puntos ESD para el área '${editorSelectedArea.areaId}' guardadas y sincronizadas con Supabase.`);
             await loadMaps();
         }
