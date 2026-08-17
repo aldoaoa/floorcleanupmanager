@@ -9,579 +9,638 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome icons -->
+    <!-- FontAwesome & Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- App Design System Styles (SMT Panel Demo Layout) -->
+    <link rel="stylesheet" href="css/styles.css?v=2.1.0">
 </head>
-<body>
-    <!-- Top Navigation Header -->
-    <header class="app-header">
-        <div class="header-brand">
-            <div class="logo-icon">
-                <i class="fa-solid fa-bolt-lightning"></i>
+<body class="module-layout">
+    <!-- Main Application Wrapper (SMT Drawer Structure) -->
+    <div class="module-wrapper" id="wrapper">
+        <div id="sidebar-overlay" class="module-sidebar-overlay"></div>
+
+        <!-- SMT DEMO SIDEBAR DRAWER -->
+        <aside class="module-sidebar" id="sidebar-wrapper">
+            <div class="module-sidebar-heading">
+                <a href="#" class="sidebar-brand-link">
+                    <i class="fa-solid fa-bolt-lightning module-sidebar-main-icon"></i>
+                    <div class="module-sidebar-title">ESD FLOOR MANAGER</div>
+                    <div class="module-sidebar-subtitle">ANSI/ESD S20.20-2021</div>
+                </a>
             </div>
-            <div class="brand-text">
-                <h1>ESD FLOOR MANAGER</h1>
-                <span>ANSI/ESD S20.20-2021 • Loseta Conductiva &amp; Cera Antiestática</span>
+
+            <!-- Instant Search Box -->
+            <div class="module-search-container">
+                <div class="module-search-wrapper">
+                    <i class="bi bi-search module-search-icon"></i>
+                    <input id="searchInput" type="search" class="module-search-input" placeholder="Buscar área, folio..." autocomplete="off" />
+                </div>
+                <div id="searchResults" class="module-search-results"></div>
             </div>
-        </div>
-        
-        <nav class="nav-tabs">
-            <button class="nav-btn active" data-tab="solicitud">
-                <i class="fa-solid fa-map-location-dot"></i> Nueva Solicitud
-            </button>
-            <button class="nav-btn" data-tab="historial">
-                <i class="fa-solid fa-list-check"></i> Historial y Solicitudes <span class="badge-count" id="request-badge">1</span>
-            </button>
-            <button class="nav-btn" data-tab="limpieza">
-                <i class="fa-solid fa-broom"></i> Módulo de Limpieza
-            </button>
-            <button class="nav-btn" data-tab="ajustes">
-                <i class="fa-solid fa-sliders"></i> Ajustes y Mapeo
-            </button>
-        </nav>
 
+            <div class="module-sidebar-divider"></div>
 
-    </header>
+            <!-- Sidebar Navigation Menu -->
+            <div class="module-menu">
+                <div class="module-menu-section-title">Navegación de Módulos</div>
 
-    <!-- Main Container -->
-    <main class="app-container">
+                <button class="nav-btn list-group-item active" data-tab="solicitud">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <span>Nueva Solicitud</span>
+                </button>
 
-        <!-- TAB 1: NUEVA SOLICITUD DE LIMPIEZA -->
-        <section id="tab-solicitud" class="tab-content active">
-            <div class="grid-layout">
-                
-                <!-- Left Panel: Interactive Floor Plan -->
-                <div class="panel map-panel glass-card">
-                    <div class="panel-header">
-                        <h2><span class="step-header-badge step-active" id="badge-step1">Paso 1</span><i class="fa-solid fa-map-pin"></i> Ubicación en Planta</h2>
-                        <div class="area-selector-container">
-                            <label for="area-select">Área de Planta:</label>
-                            <select id="area-select" class="custom-select">
-                                <!-- Populated dynamically -->
-                            </select>
-                        </div>
-                    </div>
+                <button class="nav-btn list-group-item" data-tab="historial">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>Historial y Solicitudes</span>
+                    <span class="badge-count" id="request-badge">1</span>
+                </button>
 
-                    <div class="area-info-banner" id="area-info-banner">
-                        <div class="info-pill"><i class="fa-solid fa-microchip"></i> Criticidad: <strong id="lbl-criticality">ALTA</strong></div>
-                        <div class="info-pill"><i class="fa-solid fa-calendar-day"></i> Última Limpieza: <strong id="lbl-last-cleaning">Hace 105 días</strong></div>
-                        <div class="info-pill"><i class="fa-solid fa-shield-halved"></i> Norma: <strong>ANSI/ESD S20.20-2021</strong></div>
-                    </div>
+                <button class="nav-btn list-group-item" data-tab="limpieza">
+                    <i class="fa-solid fa-broom"></i>
+                    <span>Módulo de Limpieza</span>
+                </button>
 
-                    <div class="map-viewport" id="map-viewport" style="position: relative;">
-                        <!-- Step 2 Lock Overlay -->
-                        <div class="step-lock-overlay" id="step2-lock-overlay">
-                            <div class="step-lock-card">
-                                <i class="fa-solid fa-lock"></i>
-                                <h4>Paso 2: Selección de Punto Bloqueado</h4>
-                                <p><strong>🔒 Paso 1 Requerido:</strong> Selecciona un Área de Planta en el desplegable superior para cargar el mapa interactivo.</p>
-                            </div>
-                        </div>
+                <button class="nav-btn list-group-item" data-tab="ajustes">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Ajustes y Mapeo</span>
+                </button>
+            </div>
+        </aside>
 
-                        <div class="map-wrapper" id="map-wrapper">
-                            <img id="floor-map-img" src="" alt="Plano de Piso" />
-                            <!-- Pins for measurement points and target reticle -->
-                            <div id="map-overlay"></div>
-                        </div>
-                        <div class="map-instructions">
-                            <i class="fa-solid fa-crosshairs"></i> <strong>Paso 2:</strong> Haz clic en cualquier punto del mapa para fijar la ubicación exacta de la limpieza.
-                        </div>
-                    </div>
-
-                    <div class="map-legend">
-                        <span class="legend-item"><span class="dot green"></span> Resistencia Conforme (&le; 1e8 &Omega;)</span>
-                        <span class="legend-item"><span class="dot red"></span> Resistencia Alta (&gt; 1e8 &Omega; - Cera Degradada)</span>
-                        <span class="legend-item"><span class="dot reticle"></span> Ubicación Seleccionada</span>
+        <!-- PAGE CONTENT WRAPPER -->
+        <div id="page-content-wrapper" class="module-main-content">
+            <!-- Top Header Navbar Bar -->
+            <header class="module-top-navbar">
+                <div class="top-navbar-left">
+                    <button class="btn-toggle-sidebar" id="menu-toggle" type="button">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <div class="top-navbar-breadcrumb">
+                        <span class="system-tag">ESD Floor Manager</span> / <span class="current-section-tag">Panel Principal</span>
                     </div>
                 </div>
-
-                <!-- Right Panel: Request Details & Evidence -->
-                <div class="panel form-panel glass-card" style="position: relative;">
-                    <!-- Step 3 Lock Overlay -->
-                    <div class="step-lock-overlay" id="step3-lock-overlay">
-                        <div class="step-lock-card">
-                            <i class="fa-solid fa-lock"></i>
-                            <h4>Paso 3: Formulario Bloqueado</h4>
-                            <p><strong>🔒 Paso 2 Requerido:</strong> Haz clic sobre una ubicación en el mapa de piso (Paso 2) para fijar las coordenadas a limpiar y habilitar el formulario.</p>
-                        </div>
+                <div class="top-navbar-right">
+                    <div class="user-pill">
+                        <i class="bi bi-person-circle"></i>
+                        <span>Ing. Aldo Orozco</span>
                     </div>
+                </div>
+            </header>
 
-                    <div class="panel-header">
-                        <h2><span class="step-header-badge step-locked" id="badge-step3">Paso 3</span><i class="fa-solid fa-file-pen"></i> Datos de Solicitud</h2>
-                    </div>
+            <!-- Hero Section Banner -->
+            <div class="hero-smt">
+                <div class="hero-content">
+                    <h1>ESD FLOOR MANAGER</h1>
+                    <p>Loseta Conductiva &amp; Cera Antiestática • Cumplimiento ANSI/ESD S20.20-2021</p>
+                </div>
+            </div>
 
-                    <form id="form-cleaning-request" class="request-form">
+            <!-- Main Container -->
+            <main class="app-container">
+
+                <!-- TAB 1: NUEVA SOLICITUD DE LIMPIEZA -->
+                <section id="tab-solicitud" class="tab-content active">
+                    <div class="grid-layout">
                         
-                        <!-- Selected Coordinates Badge -->
-                        <div class="form-group">
-                            <label>Coordenadas Seleccionadas:</label>
-                            <div class="coord-display" id="coord-display">
-                                <i class="fa-solid fa-location-crosshairs"></i> <span id="coord-text">Ninguna ubicación elegida (Haz clic en el mapa)</span>
+                        <!-- Left Panel: Interactive Floor Plan -->
+                        <div class="panel map-panel glass-card">
+                            <div class="panel-header">
+                                <h2><span class="step-header-badge step-active" id="badge-step1">Paso 1</span><i class="fa-solid fa-map-pin"></i> Ubicación en Planta</h2>
+                                <div class="area-selector-container">
+                                    <label for="area-select">Área de Planta:</label>
+                                    <select id="area-select" class="custom-select">
+                                        <!-- Populated dynamically -->
+                                    </select>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Visual Floor Condition Reference Guide Cards -->
-                        <div class="floor-guide-container">
-                            <div class="floor-guide-title">
-                                <i class="fa-solid fa-images"></i> Guía Visual de Referencia para Motivo de Limpieza:
+                            <div class="area-info-banner" id="area-info-banner">
+                                <div class="info-pill"><i class="fa-solid fa-microchip"></i> Criticidad: <strong id="lbl-criticality">ALTA</strong></div>
+                                <div class="info-pill"><i class="fa-solid fa-calendar-day"></i> Última Limpieza: <strong id="lbl-last-cleaning">Hace 105 días</strong></div>
+                                <div class="info-pill"><i class="fa-solid fa-shield-halved"></i> Norma: <strong>ANSI/ESD S20.20-2021</strong></div>
                             </div>
-                            <div class="floor-guide-grid">
-                                <div class="floor-guide-card" id="card-guide-stained" data-reason="Piso manchado">
-                                    <div class="guide-img-wrapper">
-                                        <img src="uploads/piso_manchado.png" alt="Piso Manchado" onerror="if(!this.dataset.retry){this.dataset.retry=true;this.src='/uploads/piso_manchado.png';}" />
-                                        <span class="guide-badge">Piso Manchado</span>
-                                    </div>
-                                    <div class="guide-card-label">
-                                        <strong><i class="fa-solid fa-droplet"></i> Piso Manchado</strong>
-                                        <p>Marcas oscuras, suciedad acumulada o manchas de grasa/polvo.</p>
+
+                            <div class="map-viewport" id="map-viewport" style="position: relative;">
+                                <!-- Step 2 Lock Overlay -->
+                                <div class="step-lock-overlay" id="step2-lock-overlay">
+                                    <div class="step-lock-card">
+                                        <i class="fa-solid fa-lock"></i>
+                                        <h4>Paso 2: Selección de Punto Bloqueado</h4>
+                                        <p><strong>🔒 Paso 1 Requerido:</strong> Selecciona un Área de Planta en el desplegable superior para cargar el mapa interactivo.</p>
                                     </div>
                                 </div>
 
-                                <div class="floor-guide-card" id="card-guide-scratched" data-reason="Piso con rayones">
-                                    <div class="guide-img-wrapper">
-                                        <img src="uploads/piso_rayado.png" alt="Piso con Rayones" onerror="if(!this.dataset.retry){this.dataset.retry=true;this.src='/uploads/piso_rayado.png';}" />
-                                        <span class="guide-badge">Piso Dañado</span>
-                                    </div>
-                                    <div class="guide-card-label">
-                                        <strong><i class="fa-solid fa-ruler-combined"></i> Piso con Rayones / Dañado</strong>
-                                        <p>Fricción, desgaste por tráfico o rayones de arrastre.</p>
-                                    </div>
+                                <div class="map-wrapper" id="map-wrapper">
+                                    <img id="floor-map-img" src="" alt="Plano de Piso" />
+                                    <!-- Pins for measurement points and target reticle -->
+                                    <div id="map-overlay"></div>
                                 </div>
+                                <div class="map-instructions">
+                                    <i class="fa-solid fa-crosshairs"></i> <strong>Paso 2:</strong> Haz clic en cualquier punto del mapa para fijar la ubicación exacta de la limpieza.
+                                </div>
+                            </div>
+
+                            <div class="map-legend">
+                                <span class="legend-item"><span class="dot green"></span> Resistencia Conforme (&le; 1e8 &Omega;)</span>
+                                <span class="legend-item"><span class="dot red"></span> Resistencia Alta (&gt; 1e8 &Omega; - Cera Degradada)</span>
+                                <span class="legend-item"><span class="dot reticle"></span> Ubicación Seleccionada</span>
                             </div>
                         </div>
 
-                        <!-- Reason Dropdown & Description -->
-                        <div class="form-group">
-                            <label for="req-reason">Motivo de Limpieza: <span class="req">*</span></label>
-                            <select id="req-reason" class="custom-select" required>
-                                <option value="">-- Seleccionar Motivo --</option>
-                                <option value="Piso manchado">Piso manchado</option>
-                                <option value="Piso con rayones">Piso con rayones</option>
-                                <option value="Resistencia eléctrica alta (superior a 1.0e8 ohms)">Resistencia eléctrica alta (superior a 1.0e8 ohms)</option>
-                                <option value="Otro motivo específico">Otro motivo específico</option>
-                            </select>
+                        <!-- Right Panel: Request Details & Evidence -->
+                        <div class="panel form-panel glass-card" style="position: relative;">
+                            <!-- Step 3 Lock Overlay -->
+                            <div class="step-lock-overlay" id="step3-lock-overlay">
+                                <div class="step-lock-card">
+                                    <i class="fa-solid fa-lock"></i>
+                                    <h4>Paso 3: Formulario Bloqueado</h4>
+                                    <p><strong>🔒 Paso 2 Requerido:</strong> Haz clic sobre una ubicación en el mapa de piso (Paso 2) para fijar las coordenadas a limpiar y habilitar el formulario.</p>
+                                </div>
+                            </div>
+
+                            <div class="panel-header">
+                                <h2><span class="step-header-badge step-locked" id="badge-step3">Paso 3</span><i class="fa-solid fa-file-pen"></i> Datos de Solicitud</h2>
+                            </div>
+
+                            <form id="form-cleaning-request" class="request-form">
+                                
+                                <!-- Selected Coordinates Badge -->
+                                <div class="form-group">
+                                    <label>Coordenadas Seleccionadas:</label>
+                                    <div class="coord-display" id="coord-display">
+                                        <i class="fa-solid fa-location-crosshairs"></i> <span id="coord-text">Ninguna ubicación elegida (Haz clic en el mapa)</span>
+                                    </div>
+                                </div>
+
+                                <!-- Visual Floor Condition Reference Guide Cards -->
+                                <div class="floor-guide-container">
+                                    <div class="floor-guide-title">
+                                        <i class="fa-solid fa-images"></i> Guía Visual de Referencia para Motivo de Limpieza:
+                                    </div>
+                                    <div class="floor-guide-grid">
+                                        <div class="floor-guide-card" id="card-guide-stained" data-reason="Piso manchado">
+                                            <div class="guide-img-wrapper">
+                                                <img src="uploads/piso_manchado.png" alt="Piso Manchado" onerror="if(!this.dataset.retry){this.dataset.retry=true;this.src='/uploads/piso_manchado.png';}" />
+                                                <span class="guide-badge">Piso Manchado</span>
+                                            </div>
+                                            <div class="guide-card-label">
+                                                <strong><i class="fa-solid fa-droplet"></i> Piso Manchado</strong>
+                                                <p>Marcas oscuras, suciedad acumulada o manchas de grasa/polvo.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="floor-guide-card" id="card-guide-scratched" data-reason="Piso con rayones">
+                                            <div class="guide-img-wrapper">
+                                                <img src="uploads/piso_rayado.png" alt="Piso con Rayones" onerror="if(!this.dataset.retry){this.dataset.retry=true;this.src='/uploads/piso_rayado.png';}" />
+                                                <span class="guide-badge">Piso Dañado</span>
+                                            </div>
+                                            <div class="guide-card-label">
+                                                <strong><i class="fa-solid fa-ruler-combined"></i> Piso con Rayones / Dañado</strong>
+                                                <p>Fricción, desgaste por tráfico o rayones de arrastre.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Reason Dropdown & Description -->
+                                <div class="form-group">
+                                    <label for="req-reason">Motivo de Limpieza: <span class="req">*</span></label>
+                                    <select id="req-reason" class="custom-select" required>
+                                        <option value="">-- Seleccionar Motivo --</option>
+                                        <option value="Piso manchado">Piso manchado</option>
+                                        <option value="Piso con rayones">Piso con rayones</option>
+                                        <option value="Resistencia eléctrica alta (superior a 1.0e8 ohms)">Resistencia eléctrica alta (superior a 1.0e8 ohms)</option>
+                                        <option value="Otro motivo específico">Otro motivo específico</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="req-notes">Detalles y Observaciones:</label>
+                                    <textarea id="req-notes" rows="3" class="custom-textarea" placeholder="Describa condiciones particulares del piso, grietas en cera o resultados de prueba de resistencia..."></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="req-user">Nombre del Solicitante: <span class="req">*</span></label>
+                                    <input type="text" id="req-user" class="custom-input" placeholder="Nombre del solicitante" required />
+                                </div>
+
+                                <!-- Evidence Upload Section -->
+                                <div class="form-group evidence-section">
+                                    <label>Evidencia Obligatoria (Imagen, PDF o Foto WebCam): <span class="req">*</span></label>
+                                    
+                                    <div class="evidence-options">
+                                        <label class="btn-file-upload">
+                                            <i class="fa-solid fa-cloud-arrow-up"></i> Cargar Imagen / PDF
+                                            <input type="file" id="evidence-file-input" accept="image/*,application/pdf" style="display:none;" />
+                                        </label>
+
+                                        <button type="button" id="btn-open-camera" class="btn-secondary">
+                                            <i class="fa-solid fa-camera"></i> Tomar Fotografía (Cámara)
+                                        </button>
+                                    </div>
+
+                                    <!-- Preview Box -->
+                                    <div id="evidence-preview-container" class="evidence-preview-box empty">
+                                        <div class="empty-state">
+                                            <i class="fa-solid fa-file-image"></i>
+                                            <span>Sin evidencia cargada. Debe subir un archivo PDF/imagen o capturar una foto.</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Live Priority Preview Box -->
+                                <div id="priority-preview-box" class="priority-preview-box">
+                                    <div class="preview-title"><i class="fa-solid fa-calculator"></i> Evaluación Prevista ANSI/ESD S20.20-2021</div>
+                                    <div id="priority-preview-content">Haz clic en el mapa para evaluar periodicidad y resistencia ESD...</div>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <button type="submit" id="btn-submit-request" class="btn-primary btn-submit">
+                                    <i class="fa-solid fa-paper-plane"></i> Evaluar y Enviar Solicitud
+                                </button>
+                            </form>
                         </div>
 
-                        <div class="form-group">
-                            <label for="req-notes">Detalles y Observaciones:</label>
-                            <textarea id="req-notes" rows="3" class="custom-textarea" placeholder="Describa condiciones particulares del piso, grietas en cera o resultados de prueba de resistencia..."></textarea>
+                    </div>
+                </section>
+
+                <!-- TAB 2: HISTORIAL Y LISTA DE SOLICITUDES -->
+                <section id="tab-historial" class="tab-content">
+                    <div class="panel glass-card">
+                        <div class="panel-header" style="flex-wrap: wrap; gap: 1rem;">
+                            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                                <h2><i class="fa-solid fa-clock-rotate-left"></i> Historial y Solicitudes</h2>
+                                <div style="display: flex; gap: 0.4rem; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                    <button id="btn-subtab-requests" class="btn-primary btn-sm active" type="button">
+                                        <i class="fa-solid fa-list-check"></i> Solicitudes de Limpieza
+                                    </button>
+                                    <button id="btn-subtab-history" class="btn-secondary btn-sm" type="button">
+                                        <i class="fa-solid fa-broom"></i> Historial de Limpiezas Realizadas
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-actions">
+                                <button id="btn-refresh-requests" class="btn-secondary"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="req-user">Nombre del Solicitante: <span class="req">*</span></label>
-                            <input type="text" id="req-user" class="custom-input" placeholder="Nombre del solicitante" required />
-                        </div>
+                        <!-- Subtab 1: Solicitudes Table -->
+                        <div id="subtab-requests-view">
+                            <!-- Filters Bar for Requests -->
+                            <div class="filters-bar" style="display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 1rem 0; background: rgba(0,0,0,0.3); padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var(--border-color); align-items: center;">
+                                <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-filter"></i> Estado:</label>
+                                    <select id="filter-req-status" class="custom-select" style="padding: 0.3rem 0.6rem; font-size: 0.82rem;">
+                                        <option value="TODOS">-- Todos los Estados --</option>
+                                        <option value="AUTORIZADA">Autorizadas / Pendientes</option>
+                                        <option value="EN_PROCESO">En Proceso</option>
+                                        <option value="LIMPIEZA_COMPLETADA">Completadas / Realizadas</option>
+                                        <option value="CANCELADA">Canceladas</option>
+                                        <option value="DENEGADA">Denegadas</option>
+                                    </select>
+                                </div>
 
-                        <!-- Evidence Upload Section -->
-                        <div class="form-group evidence-section">
-                            <label>Evidencia Obligatoria (Imagen, PDF o Foto WebCam): <span class="req">*</span></label>
-                            
-                            <div class="evidence-options">
-                                <label class="btn-file-upload">
-                                    <i class="fa-solid fa-cloud-arrow-up"></i> Cargar Imagen / PDF
-                                    <input type="file" id="evidence-file-input" accept="image/*,application/pdf" style="display:none;" />
-                                </label>
+                                <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-layer-group"></i> Área:</label>
+                                    <select id="filter-req-area" class="custom-select" style="padding: 0.3rem 0.6rem; font-size: 0.82rem;">
+                                        <option value="TODOS">-- Todas las Áreas --</option>
+                                    </select>
+                                </div>
 
-                                <button type="button" id="btn-open-camera" class="btn-secondary">
-                                    <i class="fa-solid fa-camera"></i> Tomar Fotografía (Cámara)
+                                <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-calendar"></i> Desde:</label>
+                                    <input type="date" id="filter-req-date-from" class="custom-input" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; width: auto;" />
+                                </div>
+
+                                <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-calendar"></i> Hasta:</label>
+                                    <input type="date" id="filter-req-date-to" class="custom-input" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; width: auto;" />
+                                </div>
+
+                                <button id="btn-clear-req-filters" class="btn-secondary btn-sm" type="button" style="font-size: 0.78rem; padding: 0.35rem 0.7rem;">
+                                    <i class="fa-solid fa-xmark"></i> Limpiar Filtros
                                 </button>
                             </div>
 
-                            <!-- Preview Box -->
-                            <div id="evidence-preview-container" class="evidence-preview-box empty">
-                                <div class="empty-state">
-                                    <i class="fa-solid fa-file-image"></i>
-                                    <span>Sin evidencia cargada. Debe subir un archivo PDF/imagen o capturar una foto.</span>
-                                </div>
+                            <div class="table-responsive">
+                                <table class="custom-table" id="requests-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID Solicitud</th>
+                                            <th>Fecha</th>
+                                            <th>Área</th>
+                                            <th>Motivo</th>
+                                            <th>Días s/Limpieza</th>
+                                            <th>Resistencia ESD</th>
+                                            <th>Prioridad</th>
+                                            <th>Estado</th>
+                                            <th>Evidencia</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="requests-tbody">
+                                        <!-- Populated via JS -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
-                        <!-- Live Priority Preview Box -->
-                        <div id="priority-preview-box" class="priority-preview-box">
-                            <div class="preview-title"><i class="fa-solid fa-calculator"></i> Evaluación Prevista ANSI/ESD S20.20-2021</div>
-                            <div id="priority-preview-content">Haz clic en el mapa para evaluar periodicidad y resistencia ESD...</div>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <button type="submit" id="btn-submit-request" class="btn-primary btn-submit">
-                            <i class="fa-solid fa-paper-plane"></i> Evaluar y Enviar Solicitud
-                        </button>
-                    </form>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- TAB 2: HISTORIAL Y LISTA DE SOLICITUDES -->
-        <section id="tab-historial" class="tab-content">
-            <div class="panel glass-card">
-                <div class="panel-header" style="flex-wrap: wrap; gap: 1rem;">
-                    <div style="display: flex; align-items: center; gap: 1.5rem;">
-                        <h2><i class="fa-solid fa-clock-rotate-left"></i> Historial y Solicitudes</h2>
-                        <div style="display: flex; gap: 0.4rem; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 8px; border: 1px solid var(--border-color);">
-                            <button id="btn-subtab-requests" class="btn-primary btn-sm active" type="button">
-                                <i class="fa-solid fa-list-check"></i> Solicitudes de Limpieza
-                            </button>
-                            <button id="btn-subtab-history" class="btn-secondary btn-sm" type="button">
-                                <i class="fa-solid fa-broom"></i> Historial de Limpiezas Realizadas
-                            </button>
-                        </div>
-                    </div>
-                    <div class="table-actions">
-                        <button id="btn-refresh-requests" class="btn-secondary"><i class="fa-solid fa-rotate"></i> Actualizar</button>
-                    </div>
-                </div>
-
-                <!-- Subtab 1: Solicitudes Table -->
-                <div id="subtab-requests-view">
-                    <!-- Filters Bar for Requests -->
-                    <div class="filters-bar" style="display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 1rem 0; background: rgba(0,0,0,0.3); padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var(--border-color); align-items: center;">
-                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
-                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-filter"></i> Estado:</label>
-                            <select id="filter-req-status" class="custom-select" style="padding: 0.3rem 0.6rem; font-size: 0.82rem;">
-                                <option value="TODOS">-- Todos los Estados --</option>
-                                <option value="AUTORIZADA">Autorizadas / Pendientes</option>
-                                <option value="EN_PROCESO">En Proceso</option>
-                                <option value="LIMPIEZA_COMPLETADA">Completadas / Realizadas</option>
-                                <option value="CANCELADA">Canceladas</option>
-                                <option value="DENEGADA">Denegadas</option>
-                            </select>
-                        </div>
-
-                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
-                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-layer-group"></i> Área:</label>
-                            <select id="filter-req-area" class="custom-select" style="padding: 0.3rem 0.6rem; font-size: 0.82rem;">
-                                <option value="TODOS">-- Todas las Áreas --</option>
-                            </select>
-                        </div>
-
-                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
-                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-calendar"></i> Desde:</label>
-                            <input type="date" id="filter-req-date-from" class="custom-input" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; width: auto;" />
-                        </div>
-
-                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
-                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-calendar"></i> Hasta:</label>
-                            <input type="date" id="filter-req-date-to" class="custom-input" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; width: auto;" />
-                        </div>
-
-                        <button id="btn-clear-req-filters" class="btn-secondary btn-sm" type="button" style="font-size: 0.78rem; padding: 0.35rem 0.7rem;">
-                            <i class="fa-solid fa-xmark"></i> Limpiar Filtros
-                        </button>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="custom-table" id="requests-table">
-                            <thead>
-                                <tr>
-                                    <th>ID Solicitud</th>
-                                    <th>Fecha</th>
-                                    <th>Área</th>
-                                    <th>Motivo</th>
-                                    <th>Días s/Limpieza</th>
-                                    <th>Resistencia ESD</th>
-                                    <th>Prioridad</th>
-                                    <th>Estado</th>
-                                    <th>Evidencia</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="requests-tbody">
-                                <!-- Populated via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Subtab 2: Historial de Limpiezas Realizadas Table -->
-                <div id="subtab-history-view" class="hidden">
-                    <!-- Filters Bar for History -->
-                    <div class="filters-bar" style="display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 1rem 0; background: rgba(0,0,0,0.3); padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var(--border-color); align-items: center;">
-                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
-                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-layer-group"></i> Área:</label>
-                            <select id="filter-hist-area" class="custom-select" style="padding: 0.3rem 0.6rem; font-size: 0.82rem;">
-                                <option value="TODOS">-- Todas las Áreas --</option>
-                            </select>
-                        </div>
-
-                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
-                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-calendar"></i> Fecha Realización Desde:</label>
-                            <input type="date" id="filter-hist-date-from" class="custom-input" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; width: auto;" />
-                        </div>
-
-                        <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
-                            <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-calendar"></i> Hasta:</label>
-                            <input type="date" id="filter-hist-date-to" class="custom-input" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; width: auto;" />
-                        </div>
-
-                        <button id="btn-clear-hist-filters" class="btn-secondary btn-sm" type="button" style="font-size: 0.78rem; padding: 0.35rem 0.7rem;">
-                            <i class="fa-solid fa-xmark"></i> Limpiar Filtros
-                        </button>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="custom-table" id="history-table">
-                            <thead>
-                                <tr>
-                                    <th>ID / Folio</th>
-                                    <th>Área / Cuarto</th>
-                                    <th>Razón / Origen</th>
-                                    <th>Fecha Realización</th>
-                                    <th>Próxima Limpieza</th>
-                                    <th>Sección del Mapa Limpiada</th>
-                                    <th>Realizado Por</th>
-                                    <th>Observaciones</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="history-tbody">
-                                <!-- Populated via JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- TAB 3: AJUSTES Y MAPEO (CONFIGURACIÓN) -->
-        <section id="tab-ajustes" class="tab-content">
-            <div class="grid-layout">
-                
-                <!-- Map & Coordinates Editor -->
-                <div class="panel glass-card full-width">
-                    <div class="panel-header">
-                        <h2><i class="fa-solid fa-gears"></i> Configuración de Mapas por Área y Puntos de Mapeo ESD</h2>
-                    </div>
-
-                    <div class="settings-grid">
-                        
-                        <!-- Area Map Uploader -->
-                        <div class="settings-card">
-                            <h3><i class="fa-solid fa-image"></i> 1. Cargar Mapa de Piso (1 Imagen por Área)</h3>
-                            <form id="form-upload-map" class="settings-form">
-                                <div class="form-group">
-                                    <label>Código de Área (ID):</label>
-                                    <input type="text" id="cfg-area-id" class="custom-input" placeholder="ej. SMT-01, CLEAN-02" required />
-                                </div>
-                                <div class="form-group">
-                                    <label>Nombre del Área:</label>
-                                    <input type="text" id="cfg-area-name" class="custom-input" placeholder="ej. Línea 2 SMT Cuarto Limpio" required />
-                                </div>
-                                <div class="form-group">
-                                    <label>Criticidad ESD:</label>
-                                    <select id="cfg-area-criticality" class="custom-select">
-                                        <option value="ALTA">ALTA (Componentes Clase 0 / 1A)</option>
-                                        <option value="MEDIA">MEDIA (Ensamble General)</option>
-                                        <option value="BAJA">BAJA (Almacén / Empaque)</option>
+                        <!-- Subtab 2: Historial de Limpiezas Realizadas Table -->
+                        <div id="subtab-history-view" class="hidden">
+                            <!-- Filters Bar for History -->
+                            <div class="filters-bar" style="display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 1rem 0; background: rgba(0,0,0,0.3); padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var(--border-color); align-items: center;">
+                                <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-layer-group"></i> Área:</label>
+                                    <select id="filter-hist-area" class="custom-select" style="padding: 0.3rem 0.6rem; font-size: 0.82rem;">
+                                        <option value="TODOS">-- Todas las Áreas --</option>
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <label>Seleccionar Imagen del Plano:</label>
-                                    <input type="file" id="cfg-map-file" accept="image/*" class="custom-input" required />
+
+                                <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-calendar"></i> Fecha Realización Desde:</label>
+                                    <input type="date" id="filter-hist-date-from" class="custom-input" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; width: auto;" />
                                 </div>
-                                <button type="submit" class="btn-primary"><i class="fa-solid fa-upload"></i> Subir Plano de Área</button>
+
+                                <div class="filter-group" style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <label style="font-size: 0.82rem; color: var(--text-muted);"><i class="fa-solid fa-calendar"></i> Hasta:</label>
+                                    <input type="date" id="filter-hist-date-to" class="custom-input" style="padding: 0.3rem 0.6rem; font-size: 0.82rem; width: auto;" />
+                                </div>
+
+                                <button id="btn-clear-hist-filters" class="btn-secondary btn-sm" type="button" style="font-size: 0.78rem; padding: 0.35rem 0.7rem;">
+                                    <i class="fa-solid fa-xmark"></i> Limpiar Filtros
+                                </button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="custom-table" id="history-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID / Folio</th>
+                                            <th>Área / Cuarto</th>
+                                            <th>Razón / Origen</th>
+                                            <th>Fecha Realización</th>
+                                            <th>Próxima Limpieza</th>
+                                            <th>Sección del Mapa Limpiada</th>
+                                            <th>Realizado Por</th>
+                                            <th>Observaciones</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="history-tbody">
+                                        <!-- Populated via JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 3: AJUSTES Y MAPEO (CONFIGURACIÓN) -->
+                <section id="tab-ajustes" class="tab-content">
+                    <div class="grid-layout">
+                        
+                        <!-- Map & Coordinates Editor -->
+                        <div class="panel glass-card full-width">
+                            <div class="panel-header">
+                                <h2><i class="fa-solid fa-gears"></i> Configuración de Mapas por Área y Puntos de Mapeo ESD</h2>
+                            </div>
+
+                            <div class="settings-grid">
+                                
+                                <!-- Area Map Uploader -->
+                                <div class="settings-card">
+                                    <h3><i class="fa-solid fa-image"></i> 1. Cargar Mapa de Piso (1 Imagen por Área)</h3>
+                                    <form id="form-upload-map" class="settings-form">
+                                        <div class="form-group">
+                                            <label>Código de Área (ID):</label>
+                                            <input type="text" id="cfg-area-id" class="custom-input" placeholder="ej. SMT-01, CLEAN-02" required />
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Nombre del Área:</label>
+                                            <input type="text" id="cfg-area-name" class="custom-input" placeholder="ej. Línea 2 SMT Cuarto Limpio" required />
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Criticidad ESD:</label>
+                                            <select id="cfg-area-criticality" class="custom-select">
+                                                <option value="ALTA">ALTA (Componentes Clase 0 / 1A)</option>
+                                                <option value="MEDIA">MEDIA (Ensamble General)</option>
+                                                <option value="BAJA">BAJA (Almacén / Empaque)</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Seleccionar Imagen del Plano:</label>
+                                            <input type="file" id="cfg-map-file" accept="image/*" class="custom-input" required />
+                                        </div>
+                                        <button type="submit" class="btn-primary"><i class="fa-solid fa-upload"></i> Subir Plano de Área</button>
+                                    </form>
+                                </div>
+
+                                <!-- Supabase Connection Config -->
+                                <div class="settings-card">
+                                    <h3><i class="fa-solid fa-database"></i> 2. Configuración de Base de Datos Supabase</h3>
+                                    <form id="form-supabase-config" class="settings-form">
+                                        <div class="form-group">
+                                            <label>Supabase URL API:</label>
+                                            <input type="text" id="cfg-sp-url" class="custom-input" placeholder="https://your-project.supabase.co" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Supabase Anon Key:</label>
+                                            <input type="password" id="cfg-sp-key" class="custom-input" placeholder="eyJhbGciOi..." />
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Tabla de Mediciones:</label>
+                                            <input type="text" id="cfg-sp-table" class="custom-input" value="esd_measurements" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Intervalo Mínimo de Limpieza (Días):</label>
+                                            <input type="number" id="cfg-min-days" class="custom-input" value="90" min="30" max="365" />
+                                            <small class="form-help">Regla norma: No menor a 3 meses (90 días).</small>
+                                        </div>
+                                        <button type="submit" class="btn-secondary"><i class="fa-solid fa-floppy-disk"></i> Guardar Ajustes Supabase</button>
+                                        <button type="button" id="btn-debug-supabase" class="btn-secondary" style="margin-top: 0.6rem; border-color: #00f2fe; color: #00f2fe;"><i class="fa-solid fa-bug"></i> Diagnosticar Conexión (validacion_piso)</button>
+                                    </form>
+                                </div>
+
+                            </div>
+
+                            <!-- Coordinates Editor Canvas -->
+                            <div class="settings-card margin-top">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                                    <h3><i class="fa-solid fa-location-dot"></i> 3. Editor Visual de Coordenadas de Puntos ESD</h3>
+                                    <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                        <label for="editor-area-select" style="font-weight: 600; font-size: 0.9rem; color: var(--st-primary);">Seleccionar Área a Mapear:</label>
+                                        <select id="editor-area-select" class="custom-select" style="min-width: 260px;">
+                                            <!-- Populated dynamically via JS -->
+                                        </select>
+                                    </div>
+                                </div>
+                                <p class="subtitle" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.88rem;">Seleccione un área en el desplegable y haga clic directamente sobre el plano para agregar o modificar puntos de medición de resistencia electrostática.</p>
+                                
+                                <div class="editor-viewport">
+                                    <div class="map-wrapper" id="editor-map-wrapper">
+                                        <img id="editor-map-img" src="" alt="Mapa Editor" />
+                                        <div id="editor-map-overlay"></div>
+                                    </div>
+                                </div>
+
+                                <div class="points-table-container">
+                                    <h4>Puntos Configurados para el Área Seleccionada:</h4>
+                                    <table class="custom-table" id="points-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Código</th>
+                                                <th>Etiqueta / Descripción</th>
+                                                <th>Coord X (%)</th>
+                                                <th>Coord Y (%)</th>
+                                                <th>Última Resistencia (&Omega;)</th>
+                                                <th>Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="points-tbody">
+                                            <!-- Populated JS -->
+                                        </tbody>
+                                    </table>
+                                    <button type="button" id="btn-save-points" class="btn-primary margin-top"><i class="fa-solid fa-save"></i> Guardar Coordenadas Mapeadas</button>
+                                </div>
+                            </div>
+
+                            <!-- Registered Areas Management Card -->
+                            <div class="settings-card margin-top">
+                                <h3><i class="fa-solid fa-list-check"></i> 4. Gestión de Áreas y Cuartos Registrados</h3>
+                                <p class="subtitle">Administre, modifique o elimine las áreas/cuartos de producción registrados en el sistema.</p>
+                                
+                                <div class="table-responsive margin-top">
+                                    <table class="custom-table" id="areas-management-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Código (cuarto)</th>
+                                                <th>Nombre del Área</th>
+                                                <th>Criticidad</th>
+                                                <th>Puntos Mapeados</th>
+                                                <th>Vista Previa</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="areas-management-tbody">
+                                            <!-- Populated via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 4: MÓDULO DE LIMPIEZA Y REGISTRO DE ZONAS -->
+                <section id="tab-limpieza" class="tab-content">
+                    <div class="grid-layout">
+                        
+                        <!-- Left Panel: Interactive Drawing Map -->
+                        <div class="panel map-panel glass-card">
+                            <div class="panel-header">
+                                <h2><i class="fa-solid fa-draw-polygon"></i> Trazado de Áreas Limpiadas en Mapa</h2>
+                                <div class="area-selector-container">
+                                    <label for="cleaner-area-select">Área de Planta:</label>
+                                    <select id="cleaner-area-select" class="custom-select">
+                                        <!-- Populated dynamically -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="map-instructions" style="background: rgba(16, 185, 129, 0.12); border-left: 3px solid var(--status-green); padding: 0.65rem 1rem; border-radius: 4px; font-size: 0.85rem; color: #ffffff; margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
+                                <span><i class="fa-solid fa-computer-mouse"></i> <strong>Modo Trazado:</strong> Haz clic y arrastra sobre el mapa para dibujar el recuadro del área limpiada.</span>
+                                <button type="button" id="btn-clear-drawing" class="btn-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;"><i class="fa-solid fa-rotate-left"></i> Borrar Trazado</button>
+                            </div>
+
+                            <div class="map-viewport" id="cleaner-map-viewport" style="position: relative;">
+                                <div class="map-wrapper" id="cleaner-map-wrapper" style="cursor: crosshair;">
+                                    <img id="cleaner-floor-map-img" src="" alt="Plano de Piso para Limpieza" />
+                                    <!-- Cleaned zones bounding boxes overlay & drawing canvas -->
+                                    <div id="cleaner-map-overlay"></div>
+                                    <div id="drawing-box-preview" class="drawing-box-preview hidden"></div>
+                                </div>
+                            </div>
+
+                            <div class="map-legend margin-top-sm">
+                                <span class="legend-item"><span class="dot green"></span> Recuadro de Limpieza Realizada</span>
+                                <span class="legend-item"><span class="dot red"></span> Punto/Solicitud de Limpieza Pendiente</span>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Cleaning Execution & Authorized Queue -->
+                        <div class="panel form-panel glass-card">
+                            <div class="panel-header">
+                                <h2><i class="fa-solid fa-clipboard-check"></i> Registro de Limpieza Realizada</h2>
+                            </div>
+
+                            <!-- Cleaned Zone Form -->
+                            <form id="form-cleaner-zone" class="request-form">
+                                
+                                <!-- Drawing Box Coordinates Status -->
+                                <div class="form-group">
+                                    <label>Recuadro Trazado en Mapa:</label>
+                                    <div class="coord-display" id="cleaner-box-display">
+                                        <i class="fa-solid fa-vector-square"></i> <span id="cleaner-box-text">Ningún recuadro dibujado (Haz clic y arrastra en el mapa)</span>
+                                    </div>
+                                </div>
+
+                                <!-- Link with Request (Optional or Auto-filled) -->
+                                <div class="form-group">
+                                    <label for="cleaner-req-id">Vincular Solicitud Autorizada (Opcional):</label>
+                                    <select id="cleaner-req-id" class="custom-select">
+                                        <option value="">-- Sin Solicitud (Limpieza Directa de Rutina) --</option>
+                                        <!-- Populated with authorized requests -->
+                                    </select>
+                                </div>
+
+                                <!-- Cleaning Date -->
+                                <div class="form-group">
+                                    <label for="cleaner-date">Fecha en que se Realizó la Limpieza: <span class="req">*</span></label>
+                                    <input type="datetime-local" id="cleaner-date" class="custom-input" required />
+                                </div>
+
+                                <!-- Performed By -->
+                                <div class="form-group">
+                                    <label for="cleaner-by">Nombre del Personal de Limpieza: <span class="req">*</span></label>
+                                    <input type="text" id="cleaner-by" class="custom-input" placeholder="Nombre de la persona o equipo de mantenimiento" required />
+                                </div>
+
+                                <!-- Notes & Observations -->
+                                <div class="form-group">
+                                    <label for="cleaner-notes">Notas / Tipo de Cera Aplicada:</label>
+                                    <textarea id="cleaner-notes" rows="2" class="custom-textarea" placeholder="Indicar tipo de cera ESD aplicada, solvente utilizado o detalles de la loseta..."></textarea>
+                                </div>
+
+                                <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-weight: 700;">
+                                    <i class="fa-solid fa-circle-check"></i> Guardar Recuadro y Marcar Limpieza Realizada
+                                </button>
                             </form>
-                        </div>
 
-                        <!-- Supabase Connection Config -->
-                        <div class="settings-card">
-                            <h3><i class="fa-solid fa-database"></i> 2. Configuración de Base de Datos Supabase</h3>
-                            <form id="form-supabase-config" class="settings-form">
-                                <div class="form-group">
-                                    <label>Supabase URL API:</label>
-                                    <input type="text" id="cfg-sp-url" class="custom-input" placeholder="https://your-project.supabase.co" />
+                            <!-- Authorized Requests Queue Section -->
+                            <div class="authorized-queue-section margin-top">
+                                <h3 style="font-size: 0.95rem; color: var(--st-primary); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem;">
+                                    <i class="fa-solid fa-list-check"></i> Solicitudes Autorizadas Pendientes
+                                </h3>
+                                <div class="authorized-queue-list" id="authorized-queue-list">
+                                    <!-- Populated dynamically -->
                                 </div>
-                                <div class="form-group">
-                                    <label>Supabase Anon Key:</label>
-                                    <input type="password" id="cfg-sp-key" class="custom-input" placeholder="eyJhbGciOi..." />
-                                </div>
-                                <div class="form-group">
-                                    <label>Tabla de Mediciones:</label>
-                                    <input type="text" id="cfg-sp-table" class="custom-input" value="esd_measurements" />
-                                </div>
-                                <div class="form-group">
-                                    <label>Intervalo Mínimo de Limpieza (Días):</label>
-                                    <input type="number" id="cfg-min-days" class="custom-input" value="90" min="30" max="365" />
-                                    <small class="form-help">Regla norma: No menor a 3 meses (90 días).</small>
-                                </div>
-                                <button type="submit" class="btn-secondary"><i class="fa-solid fa-floppy-disk"></i> Guardar Ajustes Supabase</button>
-                                <button type="button" id="btn-debug-supabase" class="btn-secondary" style="margin-top: 0.6rem; border-color: #00f2fe; color: #00f2fe;"><i class="fa-solid fa-bug"></i> Diagnosticar Conexión (validacion_piso)</button>
-                            </form>
-                        </div>
-
-                    </div>
-
-                    <!-- Coordinates Editor Canvas -->
-                    <div class="settings-card margin-top">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
-                            <h3><i class="fa-solid fa-location-dot"></i> 3. Editor Visual de Coordenadas de Puntos ESD</h3>
-                            <div style="display: flex; align-items: center; gap: 0.8rem;">
-                                <label for="editor-area-select" style="font-weight: 600; font-size: 0.9rem; color: var(--primary);">Seleccionar Área a Mapear:</label>
-                                <select id="editor-area-select" class="custom-select" style="min-width: 260px;">
-                                    <!-- Populated dynamically via JS -->
-                                </select>
                             </div>
-                        </div>
-                        <p class="subtitle" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.88rem;">Seleccione un área en el desplegable y haga clic directamente sobre el plano para agregar o modificar puntos de medición de resistencia electrostática.</p>
-                        
-                        <div class="editor-viewport">
-                            <div class="map-wrapper" id="editor-map-wrapper">
-                                <img id="editor-map-img" src="" alt="Mapa Editor" />
-                                <div id="editor-map-overlay"></div>
-                            </div>
+
                         </div>
 
-                        <div class="points-table-container">
-                            <h4>Puntos Configurados para el Área Seleccionada:</h4>
-                            <table class="custom-table" id="points-table">
-                                <thead>
-                                    <tr>
-                                        <th>Código</th>
-                                        <th>Etiqueta / Descripción</th>
-                                        <th>Coord X (%)</th>
-                                        <th>Coord Y (%)</th>
-                                        <th>Última Resistencia (&Omega;)</th>
-                                        <th>Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="points-tbody">
-                                    <!-- Populated JS -->
-                                </tbody>
-                            </table>
-                            <button type="button" id="btn-save-points" class="btn-primary margin-top"><i class="fa-solid fa-save"></i> Guardar Coordenadas Mapeadas</button>
-                        </div>
                     </div>
+                </section>
 
-                    <!-- Registered Areas Management Card -->
-                    <div class="settings-card margin-top">
-                        <h3><i class="fa-solid fa-list-check"></i> 4. Gestión de Áreas y Cuartos Registrados</h3>
-                        <p class="subtitle">Administre, modifique o elimine las áreas/cuartos de producción registrados en el sistema.</p>
-                        
-                        <div class="table-responsive margin-top">
-                            <table class="custom-table" id="areas-management-table">
-                                <thead>
-                                    <tr>
-                                        <th>Código (cuarto)</th>
-                                        <th>Nombre del Área</th>
-                                        <th>Criticidad</th>
-                                        <th>Puntos Mapeados</th>
-                                        <th>Vista Previa</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="areas-management-tbody">
-                                    <!-- Populated via JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            </main>
 
-                </div>
-            </div>
-        </section>
-
-        <!-- TAB 4: MÓDULO DE LIMPIEZA Y REGISTRO DE ZONAS -->
-        <section id="tab-limpieza" class="tab-content">
-            <div class="grid-layout">
-                
-                <!-- Left Panel: Interactive Drawing Map -->
-                <div class="panel map-panel glass-card">
-                    <div class="panel-header">
-                        <h2><i class="fa-solid fa-draw-polygon"></i> Trazado de Áreas Limpiadas en Mapa</h2>
-                        <div class="area-selector-container">
-                            <label for="cleaner-area-select">Área de Planta:</label>
-                            <select id="cleaner-area-select" class="custom-select">
-                                <!-- Populated dynamically -->
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="map-instructions" style="background: rgba(16, 185, 129, 0.12); border-left: 3px solid var(--status-green); padding: 0.65rem 1rem; border-radius: 4px; font-size: 0.85rem; color: #ffffff; margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: space-between;">
-                        <span><i class="fa-solid fa-computer-mouse"></i> <strong>Modo Trazado:</strong> Haz clic y arrastra sobre el mapa para dibujar el recuadro del área limpiada.</span>
-                        <button type="button" id="btn-clear-drawing" class="btn-secondary" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;"><i class="fa-solid fa-rotate-left"></i> Borrar Trazado</button>
-                    </div>
-
-                    <div class="map-viewport" id="cleaner-map-viewport" style="position: relative;">
-                        <div class="map-wrapper" id="cleaner-map-wrapper" style="cursor: crosshair;">
-                            <img id="cleaner-floor-map-img" src="" alt="Plano de Piso para Limpieza" />
-                            <!-- Cleaned zones bounding boxes overlay & drawing canvas -->
-                            <div id="cleaner-map-overlay"></div>
-                            <div id="drawing-box-preview" class="drawing-box-preview hidden"></div>
-                        </div>
-                    </div>
-
-                    <div class="map-legend margin-top-sm">
-                        <span class="legend-item"><span class="dot green"></span> Recuadro de Limpieza Realizada</span>
-                        <span class="legend-item"><span class="dot red"></span> Punto/Solicitud de Limpieza Pendiente</span>
-                    </div>
-                </div>
-
-                <!-- Right Panel: Cleaning Execution & Authorized Queue -->
-                <div class="panel form-panel glass-card">
-                    <div class="panel-header">
-                        <h2><i class="fa-solid fa-clipboard-check"></i> Registro de Limpieza Realizada</h2>
-                    </div>
-
-                    <!-- Cleaned Zone Form -->
-                    <form id="form-cleaner-zone" class="request-form">
-                        
-                        <!-- Drawing Box Coordinates Status -->
-                        <div class="form-group">
-                            <label>Recuadro Trazado en Mapa:</label>
-                            <div class="coord-display" id="cleaner-box-display">
-                                <i class="fa-solid fa-vector-square"></i> <span id="cleaner-box-text">Ningún recuadro dibujado (Haz clic y arrastra en el mapa)</span>
-                            </div>
-                        </div>
-
-                        <!-- Link with Request (Optional or Auto-filled) -->
-                        <div class="form-group">
-                            <label for="cleaner-req-id">Vincular Solicitud Autorizada (Opcional):</label>
-                            <select id="cleaner-req-id" class="custom-select">
-                                <option value="">-- Sin Solicitud (Limpieza Directa de Rutina) --</option>
-                                <!-- Populated with authorized requests -->
-                            </select>
-                        </div>
-
-                        <!-- Cleaning Date -->
-                        <div class="form-group">
-                            <label for="cleaner-date">Fecha en que se Realizó la Limpieza: <span class="req">*</span></label>
-                            <input type="datetime-local" id="cleaner-date" class="custom-input" required />
-                        </div>
-
-                        <!-- Performed By -->
-                        <div class="form-group">
-                            <label for="cleaner-by">Nombre del Personal de Limpieza: <span class="req">*</span></label>
-                            <input type="text" id="cleaner-by" class="custom-input" placeholder="Nombre de la persona o equipo de mantenimiento" required />
-                        </div>
-
-                        <!-- Notes & Observations -->
-                        <div class="form-group">
-                            <label for="cleaner-notes">Notas / Tipo de Cera Aplicada:</label>
-                            <textarea id="cleaner-notes" rows="2" class="custom-textarea" placeholder="Indicar tipo de cera ESD aplicada, solvente utilizado o detalles de la loseta..."></textarea>
-                        </div>
-
-                        <button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); font-weight: 700;">
-                            <i class="fa-solid fa-circle-check"></i> Guardar Recuadro y Marcar Limpieza Realizada
-                        </button>
-                    </form>
-
-                    <!-- Authorized Requests Queue Section -->
-                    <div class="authorized-queue-section margin-top">
-                        <h3 style="font-size: 0.95rem; color: var(--primary); margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem;">
-                            <i class="fa-solid fa-list-check"></i> Solicitudes Autorizadas Pendientes
-                        </h3>
-                        <div class="authorized-queue-list" id="authorized-queue-list">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-        </section>
-
-    </main>
+            <!-- Footer -->
+            <footer class="app-footer">
+                <p>Sistema de Solicitudes de Limpieza Cera Antiestática &copy; 2026. Cumplimiento con <strong>ANSI/ESD S20.20-2021</strong>. <span class="version-badge" id="app-version-badge">v2.1.0</span></p>
+            </footer>
+        </div>
+    </div>
 
     <!-- Modal WebCam Capture -->
     <div id="modal-webcam" class="modal-overlay">
@@ -664,12 +723,42 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="app-footer">
-        <p>Sistema de Solicitudes de Limpieza Cera Antiestática &copy; 2026. Cumplimiento con <strong>ANSI/ESD S20.20-2021</strong>. <span class="version-badge" id="app-version-badge">v1.7.1</span></p>
-    </footer>
+    <!-- App Main Controller Script -->
+    <script src="js/app.js?v=2.1.0"></script>
 
-    <!-- App Script -->
-    <script src="js/app.js?v=1.7.1"></script>
+    <!-- Sidebar Drawer Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const menuToggle = document.getElementById('menu-toggle');
+            const wrapper = document.getElementById('wrapper');
+            const overlay = document.getElementById('sidebar-overlay');
+            const searchInput = document.getElementById('searchInput');
+
+            if (menuToggle && wrapper) {
+                menuToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    wrapper.classList.toggle('toggled');
+                });
+            }
+
+            if (overlay && wrapper) {
+                overlay.addEventListener('click', () => {
+                    wrapper.classList.remove('toggled');
+                });
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const q = e.target.value.toLowerCase().trim();
+                    if (!q) return;
+                    // Highlight or switch tabs if search query matches tab names
+                    if (q.includes('solicitud')) document.querySelector('[data-tab="solicitud"]')?.click();
+                    else if (q.includes('historial')) document.querySelector('[data-tab="historial"]')?.click();
+                    else if (q.includes('limpieza') || q.includes('trazado')) document.querySelector('[data-tab="limpieza"]')?.click();
+                    else if (q.includes('ajustes') || q.includes('mapa') || q.includes('config')) document.querySelector('[data-tab="ajustes"]')?.click();
+                });
+            }
+        });
+    </script>
 </body>
 </html>

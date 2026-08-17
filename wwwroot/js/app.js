@@ -50,13 +50,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const tabContents = document.querySelectorAll('.tab-content');
 
         navBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const targetTab = btn.getAttribute('data-tab');
+            btn.addEventListener('click', (e) => {
+                const navTarget = e.currentTarget || btn;
+                const targetTab = navTarget.getAttribute('data-tab');
+                if (!targetTab) return;
+
                 navBtns.forEach(b => b.classList.remove('active'));
                 tabContents.forEach(t => t.classList.remove('active'));
 
-                btn.classList.add('active');
-                document.getElementById(`tab-${targetTab}`).classList.add('active');
+                navTarget.classList.add('active');
+                const targetSection = document.getElementById(`tab-${targetTab}`);
+                if (targetSection) targetSection.classList.add('active');
 
                 if (targetTab === 'historial') {
                     loadRequests();
