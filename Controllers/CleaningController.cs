@@ -299,6 +299,74 @@ public class CleaningController : ControllerBase
 
         return Ok(new { message = "Configuración de Supabase y ANSI/ESD actualizada correctamente", settings = _supabaseSettings });
     }
+
+    // ==========================================
+    // AUTHENTICATION & USER MANAGEMENT ENDPOINTS
+    // ==========================================
+    [HttpPost("/api/auth/login")]
+    public IActionResult Login([FromBody] LoginDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
+        {
+            return BadRequest(new { message = "Debe ingresar usuario y contraseña." });
+        }
+
+        var user = _storageService.AuthenticateUser(dto.Username, dto.Password);
+        if (user == null)
+        {
+            return Unauthorized(new { message = "Usuario o contraseña incorrectos." });
+        }
+
+        return Ok(new
+        {
+            message = "Inicio de sesión exitoso.",
+            user = new
+            {
+                id = user.Id,
+                username = user.Username,
+                displayName = user.DisplayName,
+                role = user.Role,
+                department = user.Department
+            }
+        });
+    }
+
+    [HttpGet("/api/auth/users")]
+    public IActionResult GetUsers()
+    {
+        var users = _storageService.GetUsers();
+        return Ok(users);
+    }
+
+    [HttpPost("/api/auth/users")]
+    public IActionResult CreateUser([FromBody] CreateUserDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password) || string.IsNullOrWhiteSpace(dto.DisplayName))
+        {
+            return BadRequest(new { message = "Nombre de usuario, nombre completo y contraseña son obligatorios." });
+        }
+
+        try
+        {
+            var newUser = _storageService.CreateUser(dto);
+            return Ok(new { message = $"Usuario '{newUser.Username}' creado con éxito.", user = newUser });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("/api/auth/users/{username}")]
+    public IActionResult DeleteUser(string username)
+    {
+        bool deleted = _storageService.DeleteUser(username);
+        if (deleted)
+        {
+            return Ok(new { message = $"Usuario '{username}' eliminado correctamente." });
+        }
+        return NotFound(new { message = $"El usuario '{username}' no existe." });
+    }
 }
 
 public class UploadMapDto

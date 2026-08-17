@@ -4,4 +4,5 @@ public class StorageDataPayload
 {
     public List<FloorMapConfig> Maps { get; set; } = new();
     public List<CleaningRequest> Requests { get; set; } = new();
+    public List<UserAccount> Users { get; set; } = new();
 }

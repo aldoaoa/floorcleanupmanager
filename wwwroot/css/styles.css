@@ -1253,3 +1253,20 @@ body {
         display: block;
     }
 }
+
+/* User Role Badge & Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.user-role-badge {
+    background: rgba(0, 242, 254, 0.2);
+    color: var(--st-primary);
+    border: 1px solid var(--st-primary);
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    margin-left: 4px;
+}

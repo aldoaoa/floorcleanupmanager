@@ -7,6 +7,7 @@ public class StorageService
 {
     private readonly List<FloorMapConfig> _mapConfigs = new();
     private readonly List<CleaningRequest> _requests = new();
+    private readonly List<UserAccount> _users = new();
     private readonly string _uploadDirectory;
     private readonly string _dataFilePath;
     private readonly SupabaseService? _supabaseService;
@@ -74,6 +75,12 @@ public class StorageService
                             _requests.Clear();
                             _requests.AddRange(payload.Requests);
                         }
+
+                        if (payload.Users != null && payload.Users.Any())
+                        {
+                            _users.Clear();
+                            _users.AddRange(payload.Users);
+                        }
                     }
                 }
             }
@@ -92,8 +99,39 @@ public class StorageService
                 SeedDefaultRequests();
             }
 
+            if (!_users.Any())
+            {
+                SeedDefaultUsers();
+            }
+
             SaveToDisk();
         }
+    }
+
+    private void SeedDefaultUsers()
+    {
+        _users.Clear();
+        _users.Add(new UserAccount
+        {
+            Id = "USR-01",
+            Username = "admin",
+            PasswordHash = "admin2026",
+            DisplayName = "Ing. Aldo Orozco (Admin)",
+            Role = "ADMIN",
+            Department = "Supervisación ESD",
+            CreatedAt = DateTime.UtcNow
+        });
+
+        _users.Add(new UserAccount
+        {
+            Id = "USR-02",
+            Username = "tecnico",
+            PasswordHash = "esd2026",
+            DisplayName = "Téc. Mantenimiento ESD",
+            Role = "TECHNICIAN",
+            Department = "Mantenimiento ESD",
+            CreatedAt = DateTime.UtcNow
+        });
     }
 
     public void SaveToDisk()
@@ -105,7 +143,8 @@ public class StorageService
                 var payload = new StorageDataPayload
                 {
                     Maps = _mapConfigs,
-                    Requests = _requests
+                    Requests = _requests,
+                    Users = _users
                 };
 
                 var options = new JsonSerializerOptions { WriteIndented = true };
@@ -454,6 +493,83 @@ public class StorageService
         {
             Console.WriteLine($"[Save File Error] {ex.Message}");
             return string.Empty;
+        }
+    }
+
+    // ==========================================
+    // USER ACCOUNTS AUTHENTICATION & MANAGEMENT
+    // ==========================================
+    public UserAccount? AuthenticateUser(string username, string password)
+    {
+        lock (_mapConfigs)
+        {
+            var user = _users.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+            if (user != null && user.PasswordHash == password)
+            {
+                return user;
+            }
+
+            // Fallback for legacy admin or tecnico if not yet created
+            if (username.Equals("admin", StringComparison.OrdinalIgnoreCase) && password == "admin2026")
+            {
+                return new UserAccount { Id = "USR-01", Username = "admin", DisplayName = "Ing. Aldo Orozco (Admin)", Role = "ADMIN" };
+            }
+            if (username.Equals("tecnico", StringComparison.OrdinalIgnoreCase) && password == "esd2026")
+            {
+                return new UserAccount { Id = "USR-02", Username = "tecnico", DisplayName = "Téc. Mantenimiento ESD", Role = "TECHNICIAN" };
+            }
+
+            return null;
+        }
+    }
+
+    public List<UserAccount> GetUsers()
+    {
+        lock (_mapConfigs)
+        {
+            return _users.ToList();
+        }
+    }
+
+    public UserAccount CreateUser(CreateUserDto dto)
+    {
+        lock (_mapConfigs)
+        {
+            var existing = _users.FirstOrDefault(u => u.Username.Equals(dto.Username, StringComparison.OrdinalIgnoreCase));
+            if (existing != null)
+            {
+                throw new InvalidOperationException($"El nombre de usuario '{dto.Username}' ya existe.");
+            }
+
+            var newUser = new UserAccount
+            {
+                Id = $"USR-{_users.Count + 1:D2}",
+                Username = dto.Username.Trim(),
+                PasswordHash = dto.Password.Trim(),
+                DisplayName = dto.DisplayName.Trim(),
+                Role = dto.Role.ToUpper() == "ADMIN" ? "ADMIN" : "TECHNICIAN",
+                Department = string.IsNullOrWhiteSpace(dto.Department) ? "Mantenimiento ESD" : dto.Department.Trim(),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _users.Add(newUser);
+            SaveToDisk();
+            return newUser;
+        }
+    }
+
+    public bool DeleteUser(string username)
+    {
+        lock (_mapConfigs)
+        {
+            var user = _users.FirstOrDefault(u => u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+            if (user != null)
+            {
+                _users.Remove(user);
+                SaveToDisk();
+                return true;
+            }
+            return false;
         }
     }
 }

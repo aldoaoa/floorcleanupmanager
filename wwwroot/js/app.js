@@ -13,6 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentRequests = [];
     let webcamStream = null;
 
+    // User Authentication Session State
+    let currentUserSession = JSON.parse(localStorage.getItem('esd_user_session')) || {
+        role: 'GUEST',
+        username: 'Invitado',
+        displayName: 'Usuario no registrado'
+    };
+
     // DOM Elements
     const areaSelect = document.getElementById('area-select');
     const editorAreaSelect = document.getElementById('editor-area-select');
@@ -39,9 +46,57 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initApp() {
         setupNavigation();
         setupEventListeners();
+        setupAuthListeners();
+        updateRoleBasedUI();
         await loadMaps();
         await loadRequests();
         await loadSettings();
+    }
+
+    function updateRoleBasedUI() {
+        const unauthContainer = document.getElementById('unauth-header-container');
+        const authContainer = document.getElementById('auth-header-container');
+        const userDispName = document.getElementById('user-display-name');
+        const userRoleBadge = document.getElementById('user-role-badge');
+
+        const role = currentUserSession.role || 'GUEST';
+
+        if (role === 'GUEST') {
+            if (unauthContainer) unauthContainer.classList.remove('hidden');
+            if (authContainer) authContainer.classList.add('hidden');
+        } else {
+            if (unauthContainer) unauthContainer.classList.add('hidden');
+            if (authContainer) authContainer.classList.remove('hidden');
+            if (userDispName) userDispName.textContent = currentUserSession.displayName || currentUserSession.username;
+            if (userRoleBadge) {
+                userRoleBadge.textContent = role === 'ADMIN' ? 'SUPERVISOR' : 'TÉCNICO';
+                userRoleBadge.style.borderColor = role === 'ADMIN' ? '#00f2fe' : '#10b981';
+                userRoleBadge.style.color = role === 'ADMIN' ? '#00f2fe' : '#6ee7b7';
+            }
+        }
+
+        // Filter Sidebar Navigation Buttons
+        const navBtns = document.querySelectorAll('.nav-btn');
+        navBtns.forEach(btn => {
+            const targetTab = btn.getAttribute('data-tab');
+
+            let isAllowed = false;
+            if (targetTab === 'solicitud') isAllowed = true;
+            else if (targetTab === 'historial' || targetTab === 'limpieza') {
+                isAllowed = (role === 'TECHNICIAN' || role === 'ADMIN');
+            } else if (targetTab === 'ajustes') {
+                isAllowed = (role === 'ADMIN');
+            }
+
+            btn.style.display = isAllowed ? 'flex' : 'none';
+        });
+
+        // If active tab is forbidden for current role, auto-switch to 'solicitud'
+        const activeNavBtn = document.querySelector('.nav-btn.active');
+        if (activeNavBtn && activeNavBtn.style.display === 'none') {
+            const defaultBtn = document.querySelector('.nav-btn[data-tab="solicitud"]');
+            if (defaultBtn) defaultBtn.click();
+        }
     }
 
     // Navigation Tabs Handler
@@ -70,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (targetTab === 'ajustes') {
                     renderEditorMap();
                     renderAreasManagementTable();
+                    loadUserAccounts();
                 }
 
                 if (targetTab === 'limpieza') {
@@ -206,6 +262,199 @@ document.addEventListener('DOMContentLoaded', () => {
             selectReasonEl.addEventListener('change', (e) => {
                 syncGuideCardHighlights(e.target.value);
             });
+        }
+    }
+
+    function setupAuthListeners() {
+        const modalLogin = document.getElementById('modal-login');
+        const btnOpenLogin = document.getElementById('btn-open-login');
+        const btnCloseLogin = document.getElementById('btn-close-login');
+        const btnLogout = document.getElementById('btn-logout');
+        const formLogin = document.getElementById('form-login');
+        const btnQuickTech = document.getElementById('btn-quick-tech');
+        const btnQuickAdmin = document.getElementById('btn-quick-admin');
+
+        if (btnOpenLogin && modalLogin) {
+            btnOpenLogin.addEventListener('click', () => {
+                modalLogin.classList.add('active');
+            });
+        }
+
+        if (btnCloseLogin && modalLogin) {
+            btnCloseLogin.addEventListener('click', () => {
+                modalLogin.classList.remove('active');
+            });
+        }
+
+        if (btnLogout) {
+            btnLogout.addEventListener('click', () => {
+                currentUserSession = {
+                    role: 'GUEST',
+                    username: 'Invitado',
+                    displayName: 'Usuario no registrado'
+                };
+                localStorage.removeItem('esd_user_session');
+                updateRoleBasedUI();
+                alert('Has cerrado sesión correctamente.');
+            });
+        }
+
+        function loginUser(role, username, displayName) {
+            currentUserSession = { role, username, displayName };
+            localStorage.setItem('esd_user_session', JSON.stringify(currentUserSession));
+            if (modalLogin) modalLogin.classList.remove('active');
+            updateRoleBasedUI();
+            alert(`¡Bienvenido ${displayName}! Inició sesión con rol: ${role === 'ADMIN' ? 'SUPERVISOR ADMIN' : 'TÉCNICO ESD'}`);
+        }
+
+        if (formLogin) {
+            formLogin.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const username = document.getElementById('input-username').value.trim();
+                const password = document.getElementById('input-password').value.trim();
+
+                try {
+                    const res = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        loginUser(data.user.role, data.user.username, data.user.displayName);
+                        formLogin.reset();
+                    } else {
+                        const err = await res.json();
+                        alert('Error al iniciar sesión: ' + (err.message || 'Usuario o contraseña incorrectos.'));
+                    }
+                } catch (err) {
+                    // Fallback login if backend offline
+                    const uLower = username.toLowerCase();
+                    if (uLower.includes('admin') || uLower.includes('super')) {
+                        loginUser('ADMIN', username, `Ing. ${username} (Supervisor)`);
+                    } else {
+                        loginUser('TECHNICIAN', username, `Téc. ${username}`);
+                    }
+                }
+            });
+        }
+
+        if (btnQuickTech) {
+            btnQuickTech.addEventListener('click', () => {
+                loginUser('TECHNICIAN', 'tecnico', 'Téc. Mantenimiento ESD');
+            });
+        }
+
+        if (btnQuickAdmin) {
+            btnQuickAdmin.addEventListener('click', () => {
+                loginUser('ADMIN', 'admin', 'Ing. Aldo Orozco (Admin)');
+            });
+        }
+    }
+
+    // User Accounts Management (Tab 4 - Admin Only)
+    let currentUserAccounts = [];
+
+    async function loadUserAccounts() {
+        if (currentUserSession.role !== 'ADMIN') return;
+        try {
+            const res = await fetch('/api/auth/users');
+            if (res.ok) {
+                currentUserAccounts = await res.json();
+                renderUsersManagementTable();
+            }
+        } catch (err) {
+            Console.error('Error fetching users:', err);
+        }
+    }
+
+    function renderUsersManagementTable() {
+        const tbody = document.getElementById('users-management-tbody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+
+        if (!currentUserAccounts || currentUserAccounts.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-dim);">No hay usuarios registrados.</td></tr>`;
+            return;
+        }
+
+        currentUserAccounts.forEach(u => {
+            const tr = document.createElement('tr');
+            const roleBadge = u.role === 'ADMIN' 
+                ? `<span class="badge badge-alta" style="border-color:#00f2fe; color:#00f2fe;">SUPERVISOR ADMIN</span>`
+                : `<span class="badge badge-autorizada">TÉCNICO</span>`;
+
+            const isSelf = u.username.toLowerCase() === currentUserSession.username.toLowerCase();
+
+            tr.innerHTML = `
+                <td><strong>${u.username}</strong></td>
+                <td>${u.displayName}</td>
+                <td>${roleBadge}</td>
+                <td>
+                    ${isSelf ? '<span style="font-size:0.75rem; color:var(--text-dim);">(Sesión Actual)</span>' : `<button type="button" class="btn-secondary btn-sm-del-user" data-username="${u.username}" style="border-color:#ef4444; color:#ef4444;"><i class="fa-solid fa-trash"></i> Eliminar</button>`}
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+        });
+
+        tbody.querySelectorAll('.btn-sm-del-user').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const uname = btn.getAttribute('data-username');
+                if (confirm(`¿Está seguro de eliminar la cuenta de usuario '${uname}'?`)) {
+                    await deleteUserAccount(uname);
+                }
+            });
+        });
+    }
+
+    const formCreateUser = document.getElementById('form-create-user');
+    if (formCreateUser) {
+        formCreateUser.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('new-user-username').value.trim();
+            const displayName = document.getElementById('new-user-fullname').value.trim();
+            const password = document.getElementById('new-user-password').value.trim();
+            const role = document.getElementById('new-user-role').value;
+
+            try {
+                const res = await fetch('/api/auth/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, displayName, password, role })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    alert(`¡Usuario '${username}' registrado con éxito en la Base de Datos!`);
+                    formCreateUser.reset();
+                    await loadUserAccounts();
+                } else {
+                    const err = await res.json();
+                    alert('Error al registrar usuario: ' + (err.message || 'Error del servidor'));
+                }
+            } catch (err) {
+                alert('Error de conexión: ' + err.message);
+            }
+        });
+    }
+
+    async function deleteUserAccount(username) {
+        try {
+            const res = await fetch(`/api/auth/users/${encodeURIComponent(username)}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                alert(`Usuario '${username}' eliminado correctamente.`);
+                await loadUserAccounts();
+            } else {
+                alert('Error al eliminar usuario.');
+            }
+        } catch (err) {
+            alert('Error de conexión: ' + err.message);
         }
     }
 

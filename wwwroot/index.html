@@ -45,23 +45,23 @@
             <div class="module-menu">
                 <div class="module-menu-section-title">Navegación de Módulos</div>
 
-                <button class="nav-btn list-group-item active" data-tab="solicitud">
+                <button class="nav-btn list-group-item active" data-tab="solicitud" data-role-required="GUEST">
                     <i class="fa-solid fa-map-location-dot"></i>
                     <span>Nueva Solicitud</span>
                 </button>
 
-                <button class="nav-btn list-group-item" data-tab="historial">
+                <button class="nav-btn list-group-item" data-tab="historial" data-role-required="TECHNICIAN">
                     <i class="fa-solid fa-list-check"></i>
                     <span>Historial y Solicitudes</span>
                     <span class="badge-count" id="request-badge">1</span>
                 </button>
 
-                <button class="nav-btn list-group-item" data-tab="limpieza">
+                <button class="nav-btn list-group-item" data-tab="limpieza" data-role-required="TECHNICIAN">
                     <i class="fa-solid fa-broom"></i>
                     <span>Módulo de Limpieza</span>
                 </button>
 
-                <button class="nav-btn list-group-item" data-tab="ajustes">
+                <button class="nav-btn list-group-item" data-tab="ajustes" data-role-required="ADMIN">
                     <i class="fa-solid fa-sliders"></i>
                     <span>Ajustes y Mapeo</span>
                 </button>
@@ -81,9 +81,23 @@
                     </div>
                 </div>
                 <div class="top-navbar-right">
-                    <div class="user-pill">
-                        <i class="bi bi-person-circle"></i>
-                        <span>Ing. Aldo Orozco</span>
+                    <!-- Unauthenticated View -->
+                    <div id="unauth-header-container">
+                        <button type="button" id="btn-open-login" class="btn-primary btn-sm">
+                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                        </button>
+                    </div>
+
+                    <!-- Authenticated View -->
+                    <div id="auth-header-container" class="hidden" style="display: flex; align-items: center; gap: 0.8rem;">
+                        <div class="user-pill">
+                            <i class="bi bi-person-circle"></i>
+                            <span id="user-display-name">Ing. Aldo Orozco</span>
+                            <span class="user-role-badge" id="user-role-badge">ADMIN</span>
+                        </div>
+                        <button type="button" id="btn-logout" class="btn-secondary btn-sm" title="Cerrar Sesión" style="border-color: #ef4444; color: #fca5a5;">
+                            <i class="bi bi-box-arrow-right"></i> Salir
+                        </button>
                     </div>
                 </div>
             </header>
@@ -529,6 +543,63 @@
                                 </div>
                             </div>
 
+                            <!-- Registered Users Management Card (Admin Only) -->
+                            <div class="settings-card margin-top">
+                                <h3><i class="fa-solid fa-users-gear"></i> 5. Gestión de Cuentas de Usuario y Permisos</h3>
+                                <p class="subtitle" style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.88rem;">Cree nuevas cuentas de usuario, asigne permisos de acceso (Administrador o Técnico de Mantenimiento) y gestione las credenciales persistidas en la base de datos.</p>
+
+                                <div class="settings-grid">
+                                    <!-- User Creation Form -->
+                                    <div class="settings-card" style="background: rgba(0,0,0,0.2);">
+                                        <h4 style="font-size: 0.9rem; color: var(--st-primary); margin-bottom: 0.8rem;"><i class="fa-solid fa-user-plus"></i> Dar de Alta Nuevo Usuario</h4>
+                                        <form id="form-create-user" class="settings-form">
+                                            <div class="form-group">
+                                                <label for="new-user-username">Usuario / Nómina: <span class="req">*</span></label>
+                                                <input type="text" id="new-user-username" class="custom-input" placeholder="ej. jgarcia" required />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="new-user-fullname">Nombre Completo: <span class="req">*</span></label>
+                                                <input type="text" id="new-user-fullname" class="custom-input" placeholder="ej. Juan García" required />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="new-user-password">Contraseña: <span class="req">*</span></label>
+                                                <input type="password" id="new-user-password" class="custom-input" placeholder="••••••••" required />
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="new-user-role">Rol / Permisos: <span class="req">*</span></label>
+                                                <select id="new-user-role" class="custom-select" required>
+                                                    <option value="TECHNICIAN">TÉCNICO (Acceso a Solicitudes y Limpieza)</option>
+                                                    <option value="ADMIN">SUPERVISOR ADMIN (Acceso Total + Ajustes y Usuarios)</option>
+                                                </select>
+                                            </div>
+                                            <button type="submit" class="btn-primary" style="margin-top: 0.4rem;">
+                                                <i class="fa-solid fa-user-check"></i> Registrar Usuario en BD
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <!-- Users List Table -->
+                                    <div class="settings-card" style="background: rgba(0,0,0,0.2);">
+                                        <h4 style="font-size: 0.9rem; color: var(--st-primary); margin-bottom: 0.8rem;"><i class="fa-solid fa-users"></i> Cuentas Registradas</h4>
+                                        <div class="table-responsive">
+                                            <table class="custom-table" id="users-management-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Usuario</th>
+                                                        <th>Nombre Completo</th>
+                                                        <th>Rol / Permisos</th>
+                                                        <th>Acción</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="users-management-tbody">
+                                                    <!-- Populated via JS -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </section>
@@ -637,7 +708,7 @@
 
             <!-- Footer -->
             <footer class="app-footer">
-                <p>Sistema de Solicitudes de Limpieza Cera Antiestática &copy; 2026. Cumplimiento con <strong>ANSI/ESD S20.20-2021</strong>. <span class="version-badge" id="app-version-badge">v2.1.0</span></p>
+                <p>Sistema de Solicitudes de Limpieza Cera Antiestática &copy; 2026. Cumplimiento con <strong>ANSI/ESD S20.20-2021</strong>. <span class="version-badge" id="app-version-badge">v2.2.0</span></p>
             </footer>
         </div>
     </div>
@@ -723,8 +794,47 @@
         </div>
     </div>
 
+    <!-- MODAL: LOGIN DE USUARIOS -->
+    <div id="modal-login" class="modal-overlay">
+        <div class="modal-box glass-card" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3><i class="bi bi-shield-lock-fill"></i> Iniciar Sesión en ESD System</h3>
+                <button type="button" id="btn-close-login" class="btn-icon">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-login" class="request-form">
+                    <div class="form-group">
+                        <label for="input-username">Usuario / Nómina:</label>
+                        <input type="text" id="input-username" class="custom-input" placeholder="ej. tecnico, admin" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="input-password">Contraseña:</label>
+                        <input type="password" id="input-password" class="custom-input" placeholder="••••••••" required />
+                    </div>
+                    <button type="submit" class="btn-primary" style="width:100%; margin-top:0.5rem;">
+                        <i class="bi bi-box-arrow-in-right"></i> Entrar al Sistema
+                    </button>
+                </form>
+
+                <div style="margin-top: 1.25rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <p style="font-size: 0.78rem; color: var(--text-muted); text-align: center; margin-bottom: 0.8rem;">
+                        <i class="bi bi-lightning-charge"></i> Accesos Rápidos de Prueba:
+                    </p>
+                    <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                        <button type="button" id="btn-quick-tech" class="btn-secondary btn-sm" style="flex:1; border-color: #10b981; color: #6ee7b7;">
+                            <i class="bi bi-wrench"></i> Técnico
+                        </button>
+                        <button type="button" id="btn-quick-admin" class="btn-secondary btn-sm" style="flex:1; border-color: #00f2fe; color: #00f2fe;">
+                            <i class="bi bi-person-gear"></i> Supervisor Admin
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- App Main Controller Script -->
-    <script src="js/app.js?v=2.1.0"></script>
+    <script src="js/app.js?v=2.2.0"></script>
 
     <!-- Sidebar Drawer Toggle Script -->
     <script>
